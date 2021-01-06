@@ -1,10 +1,10 @@
 //====================================================================/
-//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@/
+//ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€/
 // artisoc                                                            /
 //                                                                    /
 //====================================================================/
 
-Version = 4.2;
+Version = 4.2.1;
 
 
 
@@ -14,6 +14,7 @@ Version = 4.2;
 UNIVERSE {
     Space Field(0,0),Square_2D(50, 50, Loop, North, 1, !Map_3D){
         AgtType Walker(0, 0)[0] {
+            Dim ID(0, 0) As Integer = ();
             Dim X(0, 0) As Double = (0.0);
             Dim Y(0, 0) As Double = (0.0);
             Dim Layer(0, 0) As Integer = (0);
@@ -95,13 +96,13 @@ Univ_Init{
 	For Each One in Walkers
 		Universe.Rate_SIR(One.Condition) = Universe.Rate_SIR(One.Condition)+1/CountAgtset(Walkers)
 		//Color_Adjustment
-		If 		One.Condition == 0	Then	//Œ’íÒiŠ´ó«Òj
+		If 		One.Condition == 0	Then	//å¥å¸¸è€…ï¼ˆæ„Ÿå—æ€§è€…ï¼‰
 				One.Color = RGB(0, 200, 0)
-		Elseif	One.Condition == 3	Then	//ö•šŠ´õÒ	
+		Elseif	One.Condition == 3	Then	//æ½œä¼æ„ŸæŸ“è€…	
 				One.Color = RGB(200, 200, 100)
-		Elseif	One.Condition == 1	Then	//Š´õÒ
+		Elseif	One.Condition == 1	Then	//æ„ŸæŸ“è€…
 				One.Color = RGB(200, 0, 0)
-		Elseif	One.Condition == 2	Then	//–Æ‰u•ÛÒiœŠOÒj	
+		Elseif	One.Condition == 2	Then	//å…ç–«ä¿æŒè€…ï¼ˆé™¤å¤–è€…ï¼‰	
 				One.Color = RGB(0, 0, 200)
 		End if
 	Next One		
@@ -113,12 +114,12 @@ Univ_Step_Begin{
 	Dim Walkers As Agtset
 	Dim Counter As Integer
 	MakeAgtset(Walkers, Universe.Field.Walker)
-	For Each One in Walkers				//•À‚×‘Ö‚¦ì‹Æ
+	For Each One in Walkers				//ä¸¦ã¹æ›¿ãˆä½œæ¥­
 		One.ForSort = Rnd()
 	Next One
 	SortAgtset(Walkers, "ForSort", True)
 	Counter = 0
-	For Each One in Walkers				//lŒû“ü‚ê‘Ö‚¦
+	For Each One in Walkers				//äººå£å…¥ã‚Œæ›¿ãˆ
 			If Counter < Universe.Pop_InOut	Then
 				One.Condition = 0
 				One.RN = -99
@@ -127,13 +128,13 @@ Univ_Step_Begin{
 	Next One
 	For Each One in Walkers
 		//Color_Adjustment
-		If 		One.Condition == 0	Then	//Œ’íÒiŠ´ó«Òj
+		If 		One.Condition == 0	Then	//å¥å¸¸è€…ï¼ˆæ„Ÿå—æ€§è€…ï¼‰
 				One.Color = RGB(0, 200, 0)
-		Elseif	One.Condition == 3	Then	//ö•šŠ´õÒ	
+		Elseif	One.Condition == 3	Then	//æ½œä¼æ„ŸæŸ“è€…	
 				One.Color = RGB(200, 200, 100)
-		Elseif	One.Condition == 1	Then	//Š´õÒ
+		Elseif	One.Condition == 1	Then	//æ„ŸæŸ“è€…
 				One.Color = RGB(200, 0, 0)
-		Elseif	One.Condition == 2	Then	//–Æ‰u•ÛÒiœŠOÒj	
+		Elseif	One.Condition == 2	Then	//å…ç–«ä¿æŒè€…ï¼ˆé™¤å¤–è€…ï¼‰	
 				One.Color = RGB(0, 0, 200)
 		End if
 	Next One	
@@ -149,18 +150,18 @@ Univ_Step_End{
 	For i = 0 to 3
 		Universe.Rate_SIR(i) = 0
 	Next i
-	For Each One in Walkers	//‚Ü‚¸”‚ğ”‚¦‚Ä‚¨‚­
+	For Each One in Walkers	//ã¾ãšæ•°ã‚’æ•°ãˆã¦ãŠã
 		Universe.Rate_SIR(One.Condition) = Universe.Rate_SIR(One.Condition)+1
 	Next One
 	For i = 0 to 3
 		Universe.Rate_SIR(i)=Universe.Rate_SIR(i)/CountAgtset(Walkers) 
 	Next i
-	//Rate_Sir(0)=Œ’íÒiŠ´ó«Òj‚Ì”ä—¦
-	//Rate_Sir(3)=ö•šŠ´õÒiö•šŠ´ó«Òj‚Ì”ä—¦
-	//Rate_Sir(1)=Š´õÒ‚Ì”ä—¦
-	//Rate_Sir(2)=–Æ‰u•ÛÒiœŠOÒj‚Ì”ä—¦
+	//Rate_Sir(0)=å¥å¸¸è€…ï¼ˆæ„Ÿå—æ€§è€…ï¼‰ã®æ¯”ç‡
+	//Rate_Sir(3)=æ½œä¼æ„ŸæŸ“è€…ï¼ˆæ½œä¼æ„Ÿå—æ€§è€…ï¼‰ã®æ¯”ç‡
+	//Rate_Sir(1)=æ„ŸæŸ“è€…ã®æ¯”ç‡
+	//Rate_Sir(2)=å…ç–«ä¿æŒè€…ï¼ˆé™¤å¤–è€…ï¼‰ã®æ¯”ç‡
 	
-	//Šî–{Ä¶Y”‚Ì•½‹ÏŒvZ
+	//åŸºæœ¬å†ç”Ÿç”£æ•°ã®å¹³å‡è¨ˆç®—
 	Pop = 0
 	Universe.AverageRN = 0
 	For Each One in Walkers
@@ -205,164 +206,164 @@ Agt_Step{
 	//Condition_Adjustment
 	MakeAllAgtsetAroundOwn(Neighbors, 1, False)
 	If Universe.Scenario == "SIR"		Then
-		If 		My.Condition == 0	Then	//Œ’N‚È‚Æ‚«
+		If 		My.Condition == 0	Then	//å¥åº·ãªã¨ã
 
-		Elseif	My.Condition == 1	Then	//Š´õ«‚ğ‚à‚Á‚½‚Æ‚«
-			My.Counter = My.Counter+1	//Š´õŠúŠÔ‚ğ”‚¦‚é
-			For Each One in Neighbors	//Š´õ‚³‚¹‚é
+		Elseif	My.Condition == 1	Then	//æ„ŸæŸ“æ€§ã‚’ã‚‚ã£ãŸã¨ã
+			My.Counter = My.Counter+1	//æ„ŸæŸ“æœŸé–“ã‚’æ•°ãˆã‚‹
+			For Each One in Neighbors	//æ„ŸæŸ“ã•ã›ã‚‹
 				If One.Condition == 0 and Rnd() < Universe.Infection_Rate Then
 					One.Condition = 1
 					One.RN = 0
 					My.RN = My.RN + 1
 				End if
 			Next One
-			If	1/Universe.Infection_Period > Rnd()	Then	//‰ñ•œ‚·‚é
+			If	1/Universe.Infection_Period > Rnd()	Then	//å›å¾©ã™ã‚‹
 					My.Condition = 2
 					My.Counter = 0
 			End if
-		Elseif	My.Condition == 2	Then	//–Æ‰u‚ğ‚à‚Á‚½‚Æ‚«
+		Elseif	My.Condition == 2	Then	//å…ç–«ã‚’ã‚‚ã£ãŸã¨ã
 
 		End if
 	Elseif	Universe.Scenario == "SIS"		Then
-		If 		My.Condition == 0	Then	//Œ’N‚È‚Æ‚«
+		If 		My.Condition == 0	Then	//å¥åº·ãªã¨ã
 
-		Elseif	My.Condition == 1	Then	//Š´õ«‚ğ‚à‚Á‚½‚Æ‚«
-			My.Counter = My.Counter+1	//Š´õŠúŠÔ‚ğ”‚¦‚é
-			For Each One in Neighbors	//Š´õ‚³‚¹‚é
+		Elseif	My.Condition == 1	Then	//æ„ŸæŸ“æ€§ã‚’ã‚‚ã£ãŸã¨ã
+			My.Counter = My.Counter+1	//æ„ŸæŸ“æœŸé–“ã‚’æ•°ãˆã‚‹
+			For Each One in Neighbors	//æ„ŸæŸ“ã•ã›ã‚‹
 				If One.Condition == 0 and Rnd() < Universe.Infection_Rate Then
 					One.Condition = 1
 					One.RN = 0
 					My.RN = My.RN + 1
 				End if
 			Next One
-			If	1/Universe.Infection_Period > Rnd()	Then	//‰ñ•œ‚·‚é
+			If	1/Universe.Infection_Period > Rnd()	Then	//å›å¾©ã™ã‚‹
 					My.Condition = 0
 					My.Counter = 0
 			End if
-		Elseif	My.Condition == 2	Then	//–Æ‰u‚ğ‚à‚Á‚½‚Æ‚«
+		Elseif	My.Condition == 2	Then	//å…ç–«ã‚’ã‚‚ã£ãŸã¨ã
 
 		End if
 	Elseif	Universe.Scenario == "SI"		Then
-		If 		My.Condition == 0	Then	//Œ’N‚È‚Æ‚«
+		If 		My.Condition == 0	Then	//å¥åº·ãªã¨ã
 
-		Elseif	My.Condition == 1	Then	//Š´õ«‚ğ‚à‚Á‚½‚Æ‚«
-			My.Counter = My.Counter+1	//Š´õŠúŠÔ‚ğ”‚¦‚é
-			For Each One in Neighbors	//Š´õ‚³‚¹‚é
+		Elseif	My.Condition == 1	Then	//æ„ŸæŸ“æ€§ã‚’ã‚‚ã£ãŸã¨ã
+			My.Counter = My.Counter+1	//æ„ŸæŸ“æœŸé–“ã‚’æ•°ãˆã‚‹
+			For Each One in Neighbors	//æ„ŸæŸ“ã•ã›ã‚‹
 				If One.Condition == 0 and Rnd() < Universe.Infection_Rate Then
 					One.Condition = 1
 					One.RN = 0
 					My.RN = My.RN + 1
 				End if
 			Next One
-		Elseif	My.Condition == 2	Then	//–Æ‰u‚ğ‚à‚Á‚½‚Æ‚«
+		Elseif	My.Condition == 2	Then	//å…ç–«ã‚’ã‚‚ã£ãŸã¨ã
 
 		End if
 	Elseif	Universe.Scenario == "SEIR_01"		Then
-		If 		My.Condition == 0	Then	//Œ’N‚È‚Æ‚«
+		If 		My.Condition == 0	Then	//å¥åº·ãªã¨ã
 
-		Elseif	My.Condition == 1	Then	//Š´õ‚µ‚½‚Æ‚«
-			My.Counter = My.Counter+1	//Š´õŠúŠÔ‚ğ”‚¦‚é
-			For Each One in Neighbors	//Š´õ‚³‚¹‚é
+		Elseif	My.Condition == 1	Then	//æ„ŸæŸ“ã—ãŸã¨ã
+			My.Counter = My.Counter+1	//æ„ŸæŸ“æœŸé–“ã‚’æ•°ãˆã‚‹
+			For Each One in Neighbors	//æ„ŸæŸ“ã•ã›ã‚‹
 				If One.Condition == 0 and Rnd() < Universe.Infection_Rate Then
-					If Universe.Incubation_Period <> 0	Then	//ö•šŠúŠÔ‚ª0‚Å‚È‚¢‚Æ‚«‚Íö•šŠ´õÒ‚É‚È‚é
+					If Universe.Incubation_Period <> 0	Then	//æ½œä¼æœŸé–“ãŒ0ã§ãªã„ã¨ãã¯æ½œä¼æ„ŸæŸ“è€…ã«ãªã‚‹
 						One.Condition = 3
 						One.RN = 0
 						My.RN = My.RN + 1
-					Else										//ö•šŠúŠÔ‚ª0‚Ì‚Æ‚«‚Í‚·‚®‚ÉŠ´õÒ‚É‚·‚é
+					Else										//æ½œä¼æœŸé–“ãŒ0ã®ã¨ãã¯ã™ãã«æ„ŸæŸ“è€…ã«ã™ã‚‹
 						One.Condittion = 1
 						One.RN = 0
 						One.Counter = 0					
 					End if
 				End if
 			Next One
-			If	1/Universe.Infection_Period > Rnd()	Then	//‰ñ•œ‚·‚é
+			If	1/Universe.Infection_Period > Rnd()	Then	//å›å¾©ã™ã‚‹
 					My.Condition = 2
 					My.Counter = 0
 			End if
-		Elseif	My.Condition == 3	Then	//ö•šŠ´õÒ‚Ì‚Æ‚«iŠ´õ«‚Ì‚È‚¢Š´õÒj
-			My.Counter = My.Counter+1	//Š´õŠúŠÔ‚ğ”‚¦‚é
-			If	1/Universe.Incubation_Period > Rnd()	Then	//”­Ç‚·‚é
+		Elseif	My.Condition == 3	Then	//æ½œä¼æ„ŸæŸ“è€…ã®ã¨ãï¼ˆæ„ŸæŸ“æ€§ã®ãªã„æ„ŸæŸ“è€…ï¼‰
+			My.Counter = My.Counter+1	//æ„ŸæŸ“æœŸé–“ã‚’æ•°ãˆã‚‹
+			If	1/Universe.Incubation_Period > Rnd()	Then	//ç™ºç—‡ã™ã‚‹
 					My.Condition = 1
 					My.Counter = 0
 			End if
-			If	1/Universe.Infection_Period > Rnd()	Then	//‰ñ•œ‚·‚é
+			If	1/Universe.Infection_Period > Rnd()	Then	//å›å¾©ã™ã‚‹
 					My.Condition = 2
 					My.Counter = 0
 			End if
 		End if
 	Elseif	Universe.Scenario == "SEIR_02"		Then
-		If 		My.Condition == 0	Then	//Œ’N‚È‚Æ‚«
+		If 		My.Condition == 0	Then	//å¥åº·ãªã¨ã
 
-		Elseif	My.Condition == 1	Then	//Š´õ‚µ‚½‚Æ‚«
-			My.Counter = My.Counter+1	//Š´õŠúŠÔ‚ğ”‚¦‚é
-			For Each One in Neighbors	//Š´õ‚³‚¹‚é
+		Elseif	My.Condition == 1	Then	//æ„ŸæŸ“ã—ãŸã¨ã
+			My.Counter = My.Counter+1	//æ„ŸæŸ“æœŸé–“ã‚’æ•°ãˆã‚‹
+			For Each One in Neighbors	//æ„ŸæŸ“ã•ã›ã‚‹
 				If One.Condition == 0 and Rnd() < Universe.Infection_Rate Then
-					If Universe.Incubation_Period <> 0	Then	//ö•šŠúŠÔ‚ª0‚Å‚È‚¢‚Æ‚«‚Íö•šŠ´õÒ‚É‚È‚é
+					If Universe.Incubation_Period <> 0	Then	//æ½œä¼æœŸé–“ãŒ0ã§ãªã„ã¨ãã¯æ½œä¼æ„ŸæŸ“è€…ã«ãªã‚‹
 						One.Condition = 3
 						One.RN = 0			
 						My.RN = My.RN + 1
-					Else										//ö•šŠúŠÔ‚ª0‚Ì‚Æ‚«‚Í‚·‚®‚ÉŠ´õÒ‚É‚·‚é
+					Else										//æ½œä¼æœŸé–“ãŒ0ã®ã¨ãã¯ã™ãã«æ„ŸæŸ“è€…ã«ã™ã‚‹
 						One.Condittion = 1
 						One.RN = 0
 						One.Counter = 0
 					End if
 				End if
 			Next One
-			If	1/Universe.Infection_Period > Rnd()	Then	//‰ñ•œ‚·‚é
+			If	1/Universe.Infection_Period > Rnd()	Then	//å›å¾©ã™ã‚‹
 					My.Condition = 2
 					My.Counter = 0
 			End if
-		Elseif	My.Condition == 3	Then	//ö•šŠ´õÒ‚Ì‚Æ‚«iŠ´õ«‚Ì‚ ‚éŠ´õÒj
-			My.Counter = My.Counter+1	//Š´õŠúŠÔ‚ğ”‚¦‚é
-			For Each One in Neighbors	//Š´õ‚³‚¹‚é
+		Elseif	My.Condition == 3	Then	//æ½œä¼æ„ŸæŸ“è€…ã®ã¨ãï¼ˆæ„ŸæŸ“æ€§ã®ã‚ã‚‹æ„ŸæŸ“è€…ï¼‰
+			My.Counter = My.Counter+1	//æ„ŸæŸ“æœŸé–“ã‚’æ•°ãˆã‚‹
+			For Each One in Neighbors	//æ„ŸæŸ“ã•ã›ã‚‹
 				If One.Condition == 0 and Rnd() < Universe.Infection_Rate Then
 					One.Condition = 3
 					One.RN = 0
 					My.RN = My.RN + 1
 				End if
 			Next One
-			If	1/Universe.Incubation_Period > Rnd()	Then	//”­Ç‚·‚é
+			If	1/Universe.Incubation_Period > Rnd()	Then	//ç™ºç—‡ã™ã‚‹
 					My.Condition = 1
 					My.Counter = 0
 			End if
-			If	1/Universe.Infection_Period > Rnd()	Then	//‰ñ•œ‚·‚é
+			If	1/Universe.Infection_Period > Rnd()	Then	//å›å¾©ã™ã‚‹
 					My.Condition = 2
 					My.Counter = 0
 			End if
 		End if	
 	Elseif	Universe.Scenario == "SIRS"		Then
-		If 		My.Condition == 0	Then	//Œ’N‚È‚Æ‚«
+		If 		My.Condition == 0	Then	//å¥åº·ãªã¨ã
 
-		Elseif	My.Condition == 1	Then	//Š´õ«‚ğ‚à‚Á‚½‚Æ‚«
-			My.Counter = My.Counter+1	//Š´õŠúŠÔ‚ğ”‚¦‚é
-			For Each One in Neighbors	//Š´õ‚³‚¹‚é
+		Elseif	My.Condition == 1	Then	//æ„ŸæŸ“æ€§ã‚’ã‚‚ã£ãŸã¨ã
+			My.Counter = My.Counter+1	//æ„ŸæŸ“æœŸé–“ã‚’æ•°ãˆã‚‹
+			For Each One in Neighbors	//æ„ŸæŸ“ã•ã›ã‚‹
 				If One.Condition == 0 and Rnd() < Universe.Infection_Rate Then
 					One.Condition = 1
 					One.RN = 0
 					My.RN = My.RN + 1
 				End if
 			Next One
-			If	1/Universe.Infection_Period > Rnd()	Then	//‰ñ•œ‚·‚é
-			If	Universe.Immune_Period <> 0	Then		//–Æ‰uŠúŠÔ‚ª0‚Ìİ’è‚Ì‚Æ‚«‚Í–Æ‰u‚ğŠl“¾‚µ‚È‚¢
+			If	1/Universe.Infection_Period > Rnd()	Then	//å›å¾©ã™ã‚‹
+			If	Universe.Immune_Period <> 0	Then		//å…ç–«æœŸé–“ãŒ0ã®è¨­å®šã®ã¨ãã¯å…ç–«ã‚’ç²å¾—ã—ãªã„
 					My.Condition = 2
 					My.Counter = 0
 			End if
 			End if
-		Elseif	My.Condition == 2	Then	//–Æ‰u‚ğ‚à‚Á‚½‚Æ‚«
-			If	1/Universe.Immune_Period > Rnd()	Then	//–Æ‰u‚ª‚È‚­‚È‚é
+		Elseif	My.Condition == 2	Then	//å…ç–«ã‚’ã‚‚ã£ãŸã¨ã
+			If	1/Universe.Immune_Period > Rnd()	Then	//å…ç–«ãŒãªããªã‚‹
 					My.Condition = 0
 					My.Counter = 0
 			End if
 		End if	
 	End if		
 	//Color_Adjustment
-	If 		My.Condition == 0	Then	//Œ’íÒiŠ´ó«Òj
+	If 		My.Condition == 0	Then	//å¥å¸¸è€…ï¼ˆæ„Ÿå—æ€§è€…ï¼‰
 			My.Color = RGB(0, 200, 0)
-	Elseif	My.Condition == 3	Then	//ö•šŠ´õÒ	
+	Elseif	My.Condition == 3	Then	//æ½œä¼æ„ŸæŸ“è€…	
 			My.Color = RGB(200, 200, 100)
-	Elseif	My.Condition == 1	Then	//Š´õÒ
+	Elseif	My.Condition == 1	Then	//æ„ŸæŸ“è€…
 			My.Color = RGB(200, 0, 0)
-	Elseif	My.Condition == 2	Then	//–Æ‰u•ÛÒiœŠOÒj	
+	Elseif	My.Condition == 2	Then	//å…ç–«ä¿æŒè€…ï¼ˆé™¤å¤–è€…ï¼‰	
 			My.Color = RGB(0, 0, 200)
 	End if
 }
@@ -410,10 +411,10 @@ Map_Output {
     Title = "";
     Disable = No;
     Background_Color = 255, 255, 255;
-    Position_x = 1;
-    Position_y = 0;
-    Size_x = 349;
-    Size_y = 310;
+    Position_x = 599;
+    Position_y = 288;
+    Size_x = 382;
+    Size_y = 346;
     Map_Cell_Size = 5;
     Remarks = No;
     Legend_Pos = Top;
@@ -474,6 +475,12 @@ Map_Output {
         Agent_Image_Transparency_by_value = Yes;
         Agent_Image_Transparency_Value = 0.0;
         Agent_Image_Transparency_Variable_Name = "Universe.Field.Walker.X";
+        Font_Name = "";
+        Font_Char_Set = 0;
+        Font_Size = 0.0;
+        Font_Style = 0;
+        Font_Color = 0, 0, 0;
+        Font_Background_Color = 0, 0, 0;
     }
 }
 
@@ -497,10 +504,10 @@ Time_Graph {
     Remarks = No;
     Legend_Pos = Top;
     FastDraw = No;
-    Position_x = 351;
-    Position_y = 0;
-    Size_x = 446;
-    Size_y = 604;
+    Position_x = 604;
+    Position_y = -1;
+    Size_x = 369;
+    Size_y = 290;
     Map_Cell_Size = -1;
     Axis_Label = "", "";
     Draw_By_JFree_Chart = Yes;
@@ -579,8 +586,8 @@ Time_Graph {
     Remarks = No;
     Legend_Pos = Top;
     FastDraw = No;
-    Position_x = 1;
-    Position_y = 311;
+    Position_x = 253;
+    Position_y = -2;
     Size_x = 351;
     Size_y = 293;
     Map_Cell_Size = -1;
@@ -606,11 +613,11 @@ Time_Graph {
 // Control Panel Definition Division
 //-------------------------------------------------------
 Control_Panel {
-    Display_Area = 449, 462, 1218, 130;
+    Display_Area = 462, 899, 1218, 100;
     Display_Type = 0;
     Panel_Item {
         Item_Type = Drop_Down_List;
-        Item_Name = "ƒpƒ^[ƒ“";
+        Item_Name = "ãƒ‘ã‚¿ãƒ¼ãƒ³";
         Display_Area = 0, 0, 0, 0;
         Font_Name = "";
         Font_Char_Set = 0;
@@ -623,7 +630,7 @@ Control_Panel {
     }
     Panel_Item {
         Item_Type = Slider;
-        Item_Name = "lŒû";
+        Item_Name = "äººå£";
         Display_Area = 0, 0, 0, 0;
         Font_Name = "";
         Font_Char_Set = 0;
@@ -639,7 +646,7 @@ Control_Panel {
     }
     Panel_Item {
         Item_Type = Slider;
-        Item_Name = "—¬o“ülŒû";
+        Item_Name = "æµå‡ºå…¥äººå£";
         Display_Area = 0, 0, 0, 0;
         Font_Name = "";
         Font_Char_Set = 0;
@@ -655,7 +662,7 @@ Control_Panel {
     }
     Panel_Item {
         Item_Type = Slider;
-        Item_Name = "‰ŠúŠ´õlŒû";
+        Item_Name = "åˆæœŸæ„ŸæŸ“äººå£";
         Display_Area = 0, 0, 0, 0;
         Font_Name = "";
         Font_Char_Set = 0;
@@ -671,7 +678,7 @@ Control_Panel {
     }
     Panel_Item {
         Item_Type = Slider;
-        Item_Name = "ˆÚ“®‘¬“x";
+        Item_Name = "ç§»å‹•é€Ÿåº¦";
         Display_Area = 0, 0, 0, 0;
         Font_Name = "";
         Font_Char_Set = 0;
@@ -687,7 +694,7 @@ Control_Panel {
     }
     Panel_Item {
         Item_Type = Slider;
-        Item_Name = "Š´õ—¦";
+        Item_Name = "æ„ŸæŸ“ç‡";
         Display_Area = 0, 0, 0, 0;
         Font_Name = "";
         Font_Char_Set = 0;
@@ -703,7 +710,7 @@ Control_Panel {
     }
     Panel_Item {
         Item_Type = Slider;
-        Item_Name = "•½‹ÏŠ´õŠúŠÔ";
+        Item_Name = "å¹³å‡æ„ŸæŸ“æœŸé–“";
         Display_Area = 0, 0, 0, 0;
         Font_Name = "";
         Font_Char_Set = 0;
@@ -719,7 +726,7 @@ Control_Panel {
     }
     Panel_Item {
         Item_Type = Slider;
-        Item_Name = "•½‹Ï–Æ‰uŠúŠÔ";
+        Item_Name = "å¹³å‡å…ç–«æœŸé–“";
         Display_Area = 0, 0, 0, 0;
         Font_Name = "";
         Font_Char_Set = 0;
@@ -735,7 +742,7 @@ Control_Panel {
     }
     Panel_Item {
         Item_Type = Slider;
-        Item_Name = "ö•šŠúŠÔ";
+        Item_Name = "æ½œä¼æœŸé–“";
         Display_Area = 0, 0, 0, 0;
         Font_Name = "";
         Font_Char_Set = 0;
@@ -771,14 +778,14 @@ Others_Data {
     Debug_Position_y = 75;
     Debug_Size_x = 400;
     Debug_Size_y = 200;
-    Console_Position_x = 10;
-    Console_Position_y = 10;
-    Console_Size_x = 300;
-    Console_Size_y = 250;
-    Componen_Tree_Position_x = 0;
-    Componen_Tree_Position_y = 0;
-    Componen_Tree_Size_x = 300;
-    Componen_Tree_Size_y = 250;
+    Console_Position_x = 263;
+    Console_Position_y = 350;
+    Console_Size_x = 340;
+    Console_Size_y = 289;
+    Componen_Tree_Position_x = 2;
+    Componen_Tree_Position_y = 2;
+    Componen_Tree_Size_x = 260;
+    Componen_Tree_Size_y = 629;
     Console_Background_Color = 16777215;
     Console_Foreground_Color = 255;
     Console_DisplayLines_Max = 500;
@@ -789,6 +796,12 @@ Others_Data {
     Font_Style = 0;
     Font_Color = 0, 0, 0;
     Font_Background_Color = 0, 0, 0;
+    Window_Font_Name = "";
+    Window_Font_Char_Set = 0;
+    Window_Font_Size = 0.0;
+    Window_Font_Style = 0;
+    Window_Font_Color = 0, 0, 0;
+    Window_Font_Background_Color = 0, 0, 0;
 }
 
 
@@ -806,7 +819,7 @@ Network_Info {
 // Window Location Definition Division
 //-------------------------------------------------------
 Window_Rectangle {
-    Window_Name = Main_Window, -11, -11, 1942, 1042;
+    Window_Name = Main_Window, 677, 148, 980, 741;
     Window_Name = Output_Setting_Window, 364, 185, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
