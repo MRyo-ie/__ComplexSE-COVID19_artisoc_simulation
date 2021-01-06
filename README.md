@@ -1,0 +1,2 @@
+# __homework_COVID-19_simulation_artisoc
+琉大院の講義『複雑系工学論』で行った、コロナ19のシミュレーションのメモ用リポジトリ
