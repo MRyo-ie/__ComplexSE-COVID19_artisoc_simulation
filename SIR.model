@@ -33,9 +33,9 @@ UNIVERSE {
             Dim is_stay(0, 0) As Integer = (0);
             Dim time_go_office(0, 0) As Integer = (0);
             Dim time_stay(0, 0) As Integer = (0);
-            Dim type(0, 0) As Integer = ();
-            Dim stay_count(0, 0) As Integer = ();
-            Dim go_dest(0, 0) As Integer = ();
+            Dim type(0, 0) As Integer = (0);
+            Dim stay_count(0, 0) As Integer = (0);
+            Dim go_dest(0, 0) As Integer = (0);
         }
     }
     Dim Scenario(0, 0) As String = ("");
@@ -516,10 +516,10 @@ Map_Output {
     Title = "";
     Disable = No;
     Background_Color = 255, 255, 255;
-    Position_x = 1;
-    Position_y = 0;
-    Size_x = 599;
-    Size_y = 405;
+    Position_x = 218;
+    Position_y = -4;
+    Size_x = 458;
+    Size_y = 471;
     Map_Cell_Size = 5;
     Remarks = No;
     Legend_Pos = Top;
@@ -609,10 +609,10 @@ Time_Graph {
     Remarks = No;
     Legend_Pos = Top;
     FastDraw = No;
-    Position_x = 609;
-    Position_y = -3;
-    Size_x = 446;
-    Size_y = 604;
+    Position_x = 679;
+    Position_y = -1;
+    Size_x = 557;
+    Size_y = 444;
     Map_Cell_Size = -1;
     Axis_Label = "", "";
     Draw_By_JFree_Chart = Yes;
@@ -691,10 +691,10 @@ Time_Graph {
     Remarks = No;
     Legend_Pos = Top;
     FastDraw = No;
-    Position_x = 0;
-    Position_y = 406;
-    Size_x = 546;
-    Size_y = 388;
+    Position_x = 687;
+    Position_y = 444;
+    Size_x = 549;
+    Size_y = 358;
     Map_Cell_Size = -1;
     Axis_Label = "", "";
     Draw_By_JFree_Chart = Yes;
@@ -718,7 +718,7 @@ Time_Graph {
 // Control Panel Definition Division
 //-------------------------------------------------------
 Control_Panel {
-    Display_Area = 272, 789, 1220, 226;
+    Display_Area = 22, -138, 1220, 100;
     Display_Type = 0;
     Panel_Item {
         Item_Type = Drop_Down_List;
@@ -883,14 +883,14 @@ Others_Data {
     Debug_Position_y = 75;
     Debug_Size_x = 400;
     Debug_Size_y = 200;
-    Console_Position_x = 1058;
-    Console_Position_y = 4;
-    Console_Size_x = 300;
-    Console_Size_y = 250;
-    Componen_Tree_Position_x = 646;
-    Componen_Tree_Position_y = 1;
-    Componen_Tree_Size_x = 300;
-    Componen_Tree_Size_y = 250;
+    Console_Position_x = 214;
+    Console_Position_y = 473;
+    Console_Size_x = 460;
+    Console_Size_y = 322;
+    Componen_Tree_Position_x = 2;
+    Componen_Tree_Position_y = 2;
+    Componen_Tree_Size_x = 214;
+    Componen_Tree_Size_y = 797;
     Console_Background_Color = 16777215;
     Console_Foreground_Color = 255;
     Console_DisplayLines_Max = 500;
@@ -924,7 +924,7 @@ Network_Info {
 // Window Location Definition Division
 //-------------------------------------------------------
 Window_Rectangle {
-    Window_Name = Main_Window, 40, 41, 1533, 907;
+    Window_Name = Main_Window, -127, -1057, 1804, 901;
     Window_Name = Output_Setting_Window, 364, 185, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
