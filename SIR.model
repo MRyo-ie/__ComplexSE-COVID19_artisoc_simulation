@@ -14,7 +14,7 @@ Version = 4.2.1;
 UNIVERSE {
     Space Field(0,0),Square_2D(100, 100, Loop, North, 1, !Map_3D){
         AgtType Walker(0, 0)[0] {
-            Dim ID(0, 0) As Integer = ();
+            Dim ID(0, 0) As Integer = (0);
             Dim X(0, 0) As Double = (0.0);
             Dim Y(0, 0) As Double = (0.0);
             Dim Layer(0, 0) As Integer = (0);
@@ -24,15 +24,18 @@ UNIVERSE {
             Dim Counter(0, 0) As Integer = (0);
             Dim ForSort(0, 0) As Double = (0.0);
             Dim RN(0, 0) As Double = (0.0);
-            Dim home_x(0, 0) As Double = ();
-            Dim home_y(0, 0) As Double = ();
-            Dim dest_x(0, 0) As Double = ();
-            Dim dest_y(0, 0) As Double = ();
-            Dim set_home(0, 0) As Integer = ();
-            Dim go_home(0, 0) As Integer = ();
-            Dim is_stay(0, 0) As Integer = ();
-            Dim time_go_office(0, 0) As Integer = ();
-            Dim time_stay(0, 0) As Integer = ();
+            Dim home_x(0, 0) As Double = (0.0);
+            Dim home_y(0, 0) As Double = (0.0);
+            Dim dest_x(0, 0) As Double = (0.0);
+            Dim dest_y(0, 0) As Double = (0.0);
+            Dim set_home(0, 0) As Integer = (0);
+            Dim go_home(0, 0) As Integer = (0);
+            Dim is_stay(0, 0) As Integer = (0);
+            Dim time_go_office(0, 0) As Integer = (0);
+            Dim time_stay(0, 0) As Integer = (0);
+            Dim type(0, 0) As Integer = ();
+            Dim stay_count(0, 0) As Integer = ();
+            Dim go_dest(0, 0) As Integer = ();
         }
     }
     Dim Scenario(0, 0) As String = ("");
@@ -43,7 +46,7 @@ UNIVERSE {
     Dim Incubation_Period(0, 0) As Integer = (0);
     Dim Infection_Period(0, 0) As Integer = (0);
     Dim Immune_Period(0, 0) As Integer = (0);
-    Dim Speed(0, 0) As Double = ();
+    Dim Speed(0, 0) As Double = (0.0);
     Dim Rate_SIR(0, 0) <1> [10] As Double = (10*0.0);
     Dim AverageRN(0, 0) As Double = (0.0);
 }
@@ -61,7 +64,7 @@ Initial_Value {
     UNIVERSE.INCUBATION_PERIOD = 1(5);
     UNIVERSE.INFECTION_PERIOD = 1(29);
     UNIVERSE.IMMUNE_PERIOD = 1(500);
-    UNIVERSE.SPEED = 1(5.0);
+    UNIVERSE.SPEED = 1(4.0);
 }
 
 
@@ -200,13 +203,34 @@ Univ_Finish{
 //-------------------------------------------------------
 #begin_rule UNIVERSE.FIELD.WALKER
 Agt_Init{
-  my.dest_x = 50
-  my.dest_y = 50
+  my.type = Int(Rnd() * 3) //
+	if my.type == 0 Then //会社員
+		//目的地に向かう時間:変数名間違えたわ. 時間あったら直す
+  	//8:30 = 8 * 6 + 3 = 48 + 3 = 51
+  	//±90m =  Randint(0,18) - 9 
+  	my.time_go_office = 51 + Int(Rnd() * 19) - 9
+  	//滞在時間。 6 ~ 8時間
+  	my.time_stay = 36 + Int(Rnd() * 13)
+  Elseif my.type == 1 Then //主婦・主夫
+  	//10:30 = 10 * 6 + 3 = 60+ 3 = 63
+  	//±90m =  Randint(0,18) - 9 
+  	my.time_go_office = 63 + Int(Rnd() * 19) - 9
+  	//滞在時間。 10 ~ 30分
+  	my.time_stay = 50 + Int(Rnd() * 3)
+  Elseif my.type == 2 Then //学生
+  	//8:30 = 10 * 6 + 3 = 60+ 3 = 63
+  	//±90m =  Randint(0,18) - 9 
+  	my.time_go_office = 51 + Int(Rnd() * 19) - 9
+  	//滞在時間。5 ~ 6時間
+  	my.time_stay = 30 + Int(Rnd() * 7)
+  End if
   my.set_home = 0
   my.go_home = 0
   my.is_stay = 1
-  my.time_go_office = 51
-  my.time_stay = my.time_go_office + 36
+  my.stay_count = 0
+  // これコメントアウトすると、時間帯が固定されて、目的地に集まってる様子が見れる
+  // my.time_go_office = 51 
+  // my.time_stay = my.time_go_office + 36
 }
 
 Agt_Step{
@@ -217,20 +241,56 @@ Agt_Step{
 	Dim OptionCandidate As Integer
 	Dim distance As Double
 	
-  // 家の座標を保存する
+  // 家と目的地の座標を保存する (最初だけ起動)
   if my.set_home == 0 Then
+  	if my.type == 0 Then // 会社員
+  		if MeasureDistance(My.X, My.Y, 30, 80, Universe.Field) < MeasureDistance(My.X, My.Y, 80, 10, Universe.Field) Then
+	  		my.dest_x = 30
+	  		my.dest_y = 80
+	  	Else
+	  		my.dest_x = 80
+	  		my.dest_y = 10
+	  	End if
+	  Elseif my.type == 1 Then //主夫 主婦
+	  	if MeasureDistance(My.X, My.Y, 30, 50, Universe.Field) < MeasureDistance(My.X, My.Y, 80, 50, Universe.Field) Then
+	  		my.dest_x = 30
+	  		my.dest_y = 50
+	  	Else
+	  		my.dest_x = 80
+	  		my.dest_y = 50
+	  	End if
+	  Elseif my.type == 2 Then
+	  	if MeasureDistance(My.X, My.Y, 30, 10, Universe.Field) < MeasureDistance(My.X, My.Y, 80, 80, Universe.Field) Then
+	  		my.dest_x = 30
+	  		my.dest_y = 10
+	  	Else
+	  		my.dest_x = 80
+	  		my.dest_y = 80
+	  	End if
+	  End if
     my.home_x = my.X
     my.home_y = my.Y
     my.set_home = 1
   End if
 
+  // 1日1回、目的地に行くかどうかを決める。
+  // 自粛判定もこっちに入れてくれると助かる
+  if GetCountStep() Mod 144 == 1 Then
+  	my.go_dest = Int( Rnd() * 2) // go_dest が 1なら、目的地に向かう
+	End if
+	// 会社に留まる時間をカウント
+  if my.is_stay == 1 and my.go_home == 0 Then
+  	my.stay_count = my.stay_count + 1
+  End if
+
   // 指定したstepで移動するフラグをたてる
-  if GetCountStep() Mod 144 == my.time_go_office Then
+  if GetCountStep() Mod 144 == my.time_go_office and my.go_dest == 1 Then
   	my.go_home = 0
   	my.is_stay = 0
-  Elseif GetCountStep() Mod 144 == my.time_stay Then
+  Elseif my.stay_count == my.time_stay Then
 		my.go_home = 1
   	my.is_stay = 0
+  	my.stay_count = 0
   End If
   // Movement
   if my.is_stay == 0 Then
@@ -458,8 +518,8 @@ Map_Output {
     Background_Color = 255, 255, 255;
     Position_x = 1;
     Position_y = 0;
-    Size_x = 541;
-    Size_y = 393;
+    Size_x = 599;
+    Size_y = 405;
     Map_Cell_Size = 5;
     Remarks = No;
     Legend_Pos = Top;
@@ -658,7 +718,7 @@ Time_Graph {
 // Control Panel Definition Division
 //-------------------------------------------------------
 Control_Panel {
-    Display_Area = 2052, 596, 1220, 226;
+    Display_Area = 272, 789, 1220, 226;
     Display_Type = 0;
     Panel_Item {
         Item_Type = Drop_Down_List;
@@ -735,7 +795,7 @@ Control_Panel {
         Slider_Range_Max = 20;
         Slider_Value_Min = 4.0;
         Slider_Value_Step = 0.1;
-        Slider_Value = "10";
+        Slider_Value = "0";
     }
     Panel_Item {
         Item_Type = Slider;
@@ -823,12 +883,12 @@ Others_Data {
     Debug_Position_y = 75;
     Debug_Size_x = 400;
     Debug_Size_y = 200;
-    Console_Position_x = 1249;
-    Console_Position_y = 78;
+    Console_Position_x = 1058;
+    Console_Position_y = 4;
     Console_Size_x = 300;
     Console_Size_y = 250;
-    Componen_Tree_Position_x = 1076;
-    Componen_Tree_Position_y = 62;
+    Componen_Tree_Position_x = 646;
+    Componen_Tree_Position_y = 1;
     Componen_Tree_Size_x = 300;
     Componen_Tree_Size_y = 250;
     Console_Background_Color = 16777215;
@@ -864,7 +924,7 @@ Network_Info {
 // Window Location Definition Division
 //-------------------------------------------------------
 Window_Rectangle {
-    Window_Name = Main_Window, 1798, 97, 1696, 893;
+    Window_Name = Main_Window, 40, 41, 1533, 907;
     Window_Name = Output_Setting_Window, 364, 185, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
