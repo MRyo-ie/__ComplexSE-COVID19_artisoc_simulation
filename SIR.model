@@ -210,7 +210,6 @@ Agt_Init{
   // 「出発時間」と「滞在時間」を設定
   Set_Go_Out_Time_And_Stay(my)
   // 「目的地の座標」を設定
-  Set_Go_Out_xy(my)
   my.set_home = 0  // 自宅（初期配置座標は、Agt_Init の段階では未初期化なので、Agt_Step{} でメモる）
 //	printLn("[Info] my.X,  my.Y  :  " & my.X & ", " & my.Y )   //=>  0, 0 
 
@@ -293,6 +292,7 @@ Agt_Step{
     	// 「自宅の座標」を設定
 	  my.home_x = my.X
 	  my.home_y = my.Y
+  	Set_Go_Out_xy(my)
     my.set_home = 1
   End if
 
@@ -908,11 +908,11 @@ Others_Data {
     Debug_Size_y = 200;
     Console_Position_x = 190;
     Console_Position_y = 485;
-    Console_Size_x = 543;
+    Console_Size_x = 497;
     Console_Size_y = 322;
     Componen_Tree_Position_x = 2;
     Componen_Tree_Position_y = 2;
-    Componen_Tree_Size_x = 194;
+    Componen_Tree_Size_x = 216;
     Componen_Tree_Size_y = 792;
     Console_Background_Color = 16777215;
     Console_Foreground_Color = 255;
@@ -947,7 +947,7 @@ Network_Info {
 // Window Location Definition Division
 //-------------------------------------------------------
 Window_Rectangle {
-    Window_Name = Main_Window, -111, -1057, 1807, 891;
+    Window_Name = Main_Window, -137, -1057, 1807, 891;
     Window_Name = Output_Setting_Window, 364, 185, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
