@@ -226,7 +226,7 @@ Agt_Init{
 Sub Set_Go_Out_Time_And_Stay(One As Agt) {
 	if my.type == 0 Then //会社員
 		//目的地に向かう時間:変数名間違えたわ. 時間あったら直す
-  	//8:30 = 8 * 6 + 3 = 48 + 3 = 51
+  	//8:30 = 8 * 6 + 3 = 48 + 3 = 51 （510分）
   	//±90m =  Randint(0,18) - 9 
   	my.time_go_office = 51 + Int(Rnd() * 19) - 9
   	//滞在時間。 6 ~ 8時間
@@ -331,6 +331,7 @@ Agt_Step{
 			Forward(Universe.Speed)
 		End if
 	End if	
+	
 	//Condition_Adjustment
 	MakeAllAgtsetAroundOwn(Neighbors, 1, False)
 	If Universe.Scenario == "SIR"		Then
@@ -539,10 +540,10 @@ Map_Output {
     Title = "";
     Disable = No;
     Background_Color = 255, 255, 255;
-    Position_x = 218;
+    Position_x = 192;
     Position_y = -4;
-    Size_x = 458;
-    Size_y = 471;
+    Size_x = 484;
+    Size_y = 490;
     Map_Cell_Size = 5;
     Remarks = No;
     Legend_Pos = Top;
@@ -707,7 +708,7 @@ Time_Graph {
     Font_Background_Color = 255, 255, 255;
     Draw_Timing = Simulation_Step;
     Draw_Interval = 1;
-    Graph_Name = "AverageReproductionNumber";
+    Graph_Name = "平均実行再生産数";
     Title = "AverageReproductionNumber";
     Disable = No;
     Background_Color = 255, 255, 255;
@@ -912,8 +913,8 @@ Others_Data {
     Console_Size_y = 322;
     Componen_Tree_Position_x = 2;
     Componen_Tree_Position_y = 2;
-    Componen_Tree_Size_x = 216;
-    Componen_Tree_Size_y = 792;
+    Componen_Tree_Size_x = 190;
+    Componen_Tree_Size_y = 748;
     Console_Background_Color = 16777215;
     Console_Foreground_Color = 255;
     Console_DisplayLines_Max = 500;
@@ -947,8 +948,8 @@ Network_Info {
 // Window Location Definition Division
 //-------------------------------------------------------
 Window_Rectangle {
-    Window_Name = Main_Window, -137, -1057, 1807, 891;
-    Window_Name = Output_Setting_Window, 364, 185, 480, 350;
+    Window_Name = Main_Window, -131, -1057, 1750, 922;
+    Window_Name = Output_Setting_Window, 650, 286, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
 
