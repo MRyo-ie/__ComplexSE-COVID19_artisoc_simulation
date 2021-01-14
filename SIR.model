@@ -60,9 +60,9 @@ Initial_Value {
     UNIVERSE.POPULATION = 1(1650);
     UNIVERSE.POP_INOUT = 1(0);
     UNIVERSE.INITIAL_INFECTED = 1(10.0);
-    UNIVERSE.INFECTION_RATE = 1(0.5);
+    UNIVERSE.INFECTION_RATE = 1(0.03);
     UNIVERSE.INCUBATION_PERIOD = 1(5);
-    UNIVERSE.INFECTION_PERIOD = 1(29);
+    UNIVERSE.INFECTION_PERIOD = 1(7);
     UNIVERSE.IMMUNE_PERIOD = 1(500);
     UNIVERSE.SPEED = 1(4.0);
 }
@@ -77,6 +77,12 @@ Univ_Init{
 	Dim One As Agt
 	Dim Walkers As Agtset
 	Dim Counter As Integer
+
+	// （日）→ stepあたり（/10分）に変換する。
+	Universe.Infection_Period = Universe.Infection_Period * 24 * 6
+	Universe.Incubation_Period = Universe.Incubation_Period * 24 * 6
+//	printLn("Universe.Infection_Period : " & Universe.Infection_Period)
+	
 	For i = 0 To Universe.Population - 1
 		One = CreateAgt(Universe.Field.Walker)
 		One.Direction = Rnd()*360
@@ -264,7 +270,7 @@ Sub Set_Go_Out_xy(One As Agt) {
 	  		One.dest_x = 80
 	  		One.dest_y = 50
 	  	End if
-	  Elseif One.type == 2 Then
+    Elseif One.type == 2 Then //学生
 	  	if MeasureDistance(One.X, One.Y, 30, 10, Universe.Field) < MeasureDistance(One.X, One.Y, 80, 80, Universe.Field) Then
 	  		One.dest_x = 30
 	  		One.dest_y = 10
@@ -296,11 +302,9 @@ Agt_Step{
     my.set_home = 1
   End if
 
-  // 1日1回、目的地に行くかどうかを決める。
-  // 自粛判定もこっちに入れてくれると助かる
-  if GetCountStep() Mod 144 == 1 Then
-  	my.go_dest = Int( Rnd() * 2) // go_dest が 1なら、目的地に向かう
-	End if
+  // 外出確率を計算する（外出する場合は、my.go_dest = 1 にする）
+  Set_Go_Out_Rate(my, True)    // 自粛ありの場合は、第２引数を True にする。
+
 	// 会社に留まる時間をカウント
   if my.is_stay == 1 and my.go_home == 0 Then
   	my.stay_count = my.stay_count + 1
@@ -333,9 +337,9 @@ Agt_Step{
 	End if	
 	
 	//Condition_Adjustment
-	MakeAllAgtsetAroundOwn(Neighbors, 1, False)
-	If Universe.Scenario == "SIR"		Then
-		If 		My.Condition == 0	Then	//健康なとき
+  MakeAllAgtsetAroundOwn(Neighbors, 10/4000, False)
+  If Universe.Scenario == "SIR"    Then
+    If     My.Condition == 0  Then  //健康なとき
 
 		Elseif	My.Condition == 1	Then	//感染性をもったとき
 			My.Counter = My.Counter+1	//感染期間を数える
@@ -485,6 +489,7 @@ Agt_Step{
 			End if
 		End if	
 	End if		
+  
 	//Color_Adjustment
 	If 		My.Condition == 0	Then	//健常者（感受性者）
 			My.Color = RGB(0, 200, 0)
@@ -496,6 +501,50 @@ Agt_Step{
 			My.Color = RGB(0, 0, 200)
 	End if
 }
+
+
+// 【関数】外出確率を計算 → 外出するかを決める。
+// Is_stay_home : 自粛あり？
+Sub Set_Go_Out_Rate(One As Agt, Is_stay_home As Boolean) {
+  Dim go_out_rate As Double
+  Dim stress_val As Double
+  
+  // 1日1回、目的地に行くかどうかを決める。
+  // 自粛判定もこっちに入れてくれると助かる
+  stress_val = 0
+  
+  if GetCountStep() Mod 144 == 1 Then
+  
+    if One.type == 0 Then // 会社員
+      // 自粛ストレス値
+      if Is_stay_home Then
+        // 囚人のジレンマ
+        stress_val = 0
+      End if
+      go_out_rate = 0.99 - stress_val
+    Elseif One.type == 1 Then //主夫 主婦
+      // 自粛ストレス値
+      if Is_stay_home Then
+        // 囚人のジレンマ
+        stress_val = 0
+      End if
+      go_out_rate = 0.50 - stress_val
+    Elseif One.type == 2 Then //学生
+      // 自粛ストレス値
+      if Is_stay_home Then
+        // 囚人のジレンマ
+        stress_val = 0
+      End if
+      go_out_rate = 0.99 - stress_val
+    End if
+
+    // 外出するか決める。
+    if Rnd() < go_out_rate Then
+      One.go_dest = 1    // go_dest が 1なら、目的地に向かう
+    End if
+    
+  End if
+}
 #end_rule UNIVERSE.FIELD.WALKER
 
 
@@ -505,7 +554,7 @@ Agt_Step{
 // Simulation Definition Division
 //-------------------------------------------------------
 Single_Simulation {
-    Step_Max = 700;
+    Step_Max = 4320;
     Time_Max = 0;
     End_Condition = "";
     Exec_Wait = 0;
@@ -742,7 +791,7 @@ Time_Graph {
 // Control Panel Definition Division
 //-------------------------------------------------------
 Control_Panel {
-    Display_Area = 0, 23, 1220, 100;
+    Display_Area = 93, 966, 1260, 100;
     Display_Type = 0;
     Panel_Item {
         Item_Type = Drop_Down_List;
@@ -835,11 +884,11 @@ Control_Panel {
         Slider_Range_Max = 100;
         Slider_Value_Min = 0.0;
         Slider_Value_Step = 0.01;
-        Slider_Value = "50";
+        Slider_Value = "3";
     }
     Panel_Item {
         Item_Type = Slider;
-        Item_Name = "平均感染期間";
+        Item_Name = "平均感染期間（日）";
         Display_Area = 0, 0, 0, 0;
         Font_Name = "";
         Font_Char_Set = 0;
@@ -848,10 +897,10 @@ Control_Panel {
         Font_Color = 0, 0, 0;
         Font_Background_Color = 0, 0, 0;
         Var_Name = "Universe.Infection_Period";
-        Slider_Range_Max = 100;
-        Slider_Value_Min = 0.0;
+        Slider_Range_Max = 9;
+        Slider_Value_Min = 5.0;
         Slider_Value_Step = 1.0;
-        Slider_Value = "29";
+        Slider_Value = "2";
     }
     Panel_Item {
         Item_Type = Slider;
@@ -871,7 +920,7 @@ Control_Panel {
     }
     Panel_Item {
         Item_Type = Slider;
-        Item_Name = "潜伏期間";
+        Item_Name = "潜伏期間（日）";
         Display_Area = 0, 0, 0, 0;
         Font_Name = "";
         Font_Char_Set = 0;
@@ -880,10 +929,10 @@ Control_Panel {
         Font_Color = 0, 0, 0;
         Font_Background_Color = 0, 0, 0;
         Var_Name = "Universe.Incubation_Period";
-        Slider_Range_Max = 99;
-        Slider_Value_Min = 1.0;
+        Slider_Range_Max = 5;
+        Slider_Value_Min = 2.0;
         Slider_Value_Step = 1.0;
-        Slider_Value = "4";
+        Slider_Value = "3";
     }
 }
 
@@ -914,7 +963,7 @@ Others_Data {
     Componen_Tree_Position_x = 2;
     Componen_Tree_Position_y = 2;
     Componen_Tree_Size_x = 190;
-    Componen_Tree_Size_y = 748;
+    Componen_Tree_Size_y = 809;
     Console_Background_Color = 16777215;
     Console_Foreground_Color = 255;
     Console_DisplayLines_Max = 500;
@@ -948,8 +997,8 @@ Network_Info {
 // Window Location Definition Division
 //-------------------------------------------------------
 Window_Rectangle {
-    Window_Name = Main_Window, -131, -1057, 1750, 922;
-    Window_Name = Output_Setting_Window, 650, 286, 480, 350;
+    Window_Name = Main_Window, 0, 23, 1328, 879;
+    Window_Name = Output_Setting_Window, 674, 293, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
 
@@ -985,6 +1034,8 @@ Model_Description {
         Function Set_Go_Out_xy {
         }
         Function Agt_Step {
+        }
+        Function Set_Go_Out_Rate {
         }
     }
 }
