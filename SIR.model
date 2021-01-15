@@ -172,7 +172,7 @@ Univ_Step_End{
 	For Each One in Walkers	//まず数を数えておく
 		Universe.Rate_SIR(One.Condition) = Universe.Rate_SIR(One.Condition)+1
 	Next One
-	For i = 0 to 3
+	For i = 0 to 4
 		Universe.Rate_SIR(i)=Universe.Rate_SIR(i)/CountAgtset(Walkers) 
 	Next i
 	//Rate_Sir(0)=健常者（感受性者）の比率
@@ -293,214 +293,223 @@ Agt_Step{
 	Dim Trigger As Integer
 	Dim OptionCandidate As Integer
 	Dim distance As Double
+
+	if My.Condition <> 4 Then
+	  // 家と目的地の座標を保存する (最初だけ起動)
+	  if my.set_home == 0 Then
+	    	// 「自宅の座標」を設定
+		  my.home_x = my.X
+		  my.home_y = my.Y
+	  	Set_Go_Out_xy(my)
+	    my.set_home = 1
+	  End if
 	
-  // 家と目的地の座標を保存する (最初だけ起動)
-  if my.set_home == 0 Then
-    	// 「自宅の座標」を設定
-	  my.home_x = my.X
-	  my.home_y = my.Y
-  	Set_Go_Out_xy(my)
-    my.set_home = 1
-  End if
-
-  // 外出確率を計算する（外出する場合は、my.go_dest = 1 にする）
-	Set_Go_Out_Rate(my)    // 自粛ありの場合は、第２引数を True にする。
-
-	// 会社に留まる時間をカウント
-  if my.is_stay == 1 and my.go_home == 0 Then
-  	my.stay_count = my.stay_count + 1
-  End if
-
-  // 指定したstepで移動するフラグをたてる
-  if GetCountStep() Mod 144 == my.time_go_office and my.go_dest == 1 Then
-  	my.go_home = 0
-  	my.is_stay = 0
-  Elseif my.stay_count == my.time_stay Then
-		my.go_home = 1
-  	my.is_stay = 0
-  	my.stay_count = 0
-  End If
-  // Movement
-  if my.is_stay == 0 Then
-		if my.go_home == 0 Then
-	  	My.Direction = GetDirection(my.X, my.Y, my.dest_x, my.dest_y, Universe.Field)
-	  	distance = MeasureDistance(My.X, My.Y, my.dest_x, my.dest_y, Universe.Field)
-		Elseif my.go_home == 1 Then
-			My.Direction = GetDirection(my.X, my.Y, my.home_x, my.home_y, Universe.Field)
-			distance = MeasureDistance(My.X, My.Y, my.home_x, my.home_y, Universe.Field)
-		End If
-		if Universe.Speed >= distance Then
-			Forward(distance)
-			my.is_stay = 1
-		Else
-			Forward(Universe.Speed)
-		End if
-	End if	
+	  // 外出確率を計算する（外出する場合は、my.go_dest = 1 にする）
+		Set_Go_Out_Rate(my)    // 自粛ありの場合は、第２引数を True にする。
 	
-	//Condition_Adjustment
-  MakeAllAgtsetAroundOwn(Neighbors, 0.02, False)
-  If Universe.Scenario == "SIR"    Then
-    If     My.Condition == 0  Then  //健康なとき
-
-		Elseif	My.Condition == 1	Then	//感染性をもったとき
-			My.Counter = My.Counter+1	//感染期間を数える
-			For Each One in Neighbors	//感染させる
-				If One.Condition == 0 and Is_Infection() Then
-					One.Condition = 1
-					One.RN = 0
-					My.RN = My.RN + 1
-				End if
-			Next One
-			If	1/Universe.Infection_Period > Rnd()	Then	//回復する
-					My.Condition = 2
-					My.Counter = 0
+		// 会社に留まる時間をカウント
+	  if my.is_stay == 1 and my.go_home == 0 Then
+	  	my.stay_count = my.stay_count + 1
+	  End if
+	
+	  // 指定したstepで移動するフラグをたてる
+	  if GetCountStep() Mod 144 == my.time_go_office and my.go_dest == 1 Then
+	  	my.go_home = 0
+	  	my.is_stay = 0
+	  Elseif my.stay_count == my.time_stay Then
+			my.go_home = 1
+	  	my.is_stay = 0
+	  	my.stay_count = 0
+	  End If
+	  // Movement
+	  if my.is_stay == 0 Then
+			if my.go_home == 0 Then
+		  	My.Direction = GetDirection(my.X, my.Y, my.dest_x, my.dest_y, Universe.Field)
+		  	distance = MeasureDistance(My.X, My.Y, my.dest_x, my.dest_y, Universe.Field)
+			Elseif my.go_home == 1 Then
+				My.Direction = GetDirection(my.X, my.Y, my.home_x, my.home_y, Universe.Field)
+				distance = MeasureDistance(My.X, My.Y, my.home_x, my.home_y, Universe.Field)
+			End If
+			if Universe.Speed >= distance Then
+				Forward(distance)
+				my.is_stay = 1
+			Else
+				Forward(Universe.Speed)
 			End if
-		Elseif	My.Condition == 2	Then	//免疫をもったとき
-
-		End if
-	Elseif	Universe.Scenario == "SIS"		Then
-		If 		My.Condition == 0	Then	//健康なとき
-
-		Elseif	My.Condition == 1	Then	//感染性をもったとき
-			My.Counter = My.Counter+1	//感染期間を数える
-			For Each One in Neighbors	//感染させる
-				If One.Condition == 0 and Is_Infection() Then
-					One.Condition = 1
-					One.RN = 0
-					My.RN = My.RN + 1
+		End if	
+		
+		//Condition_Adjustment
+	  MakeAllAgtsetAroundOwn(Neighbors, 0.02, False)
+	  If Universe.Scenario == "SIR"    Then
+	    If     My.Condition == 0  Then  //健康なとき
+	
+			Elseif	My.Condition == 1	Then	//感染性をもったとき
+				My.Counter = My.Counter+1	//感染期間を数える
+				For Each One in Neighbors	//感染させる
+					If One.Condition == 0 and Is_Infection() Then
+						One.Condition = 1
+						One.RN = 0
+						My.RN = My.RN + 1
+					End if
+				Next One
+				If	1/Universe.Infection_Period > Rnd()	Then	//回復する
+						My.Condition = 2
+						My.Counter = 0
 				End if
-			Next One
-			If	1/Universe.Infection_Period > Rnd()	Then	//回復する
-					My.Condition = 0
-					My.Counter = 0
+			Elseif	My.Condition == 2	Then	//免疫をもったとき
+	
 			End if
-		Elseif	My.Condition == 2	Then	//免疫をもったとき
-
-		End if
-	Elseif	Universe.Scenario == "SI"		Then
-		If 		My.Condition == 0	Then	//健康なとき
-
-		Elseif	My.Condition == 1	Then	//感染性をもったとき
-			My.Counter = My.Counter+1	//感染期間を数える
-			For Each One in Neighbors	//感染させる
-				If One.Condition == 0 and Is_Infection() Then
-					One.Condition = 1
-					One.RN = 0
-					My.RN = My.RN + 1
+		Elseif	Universe.Scenario == "SIS"		Then
+			If 		My.Condition == 0	Then	//健康なとき
+	
+			Elseif	My.Condition == 1	Then	//感染性をもったとき
+				My.Counter = My.Counter+1	//感染期間を数える
+				For Each One in Neighbors	//感染させる
+					If One.Condition == 0 and Is_Infection() Then
+						One.Condition = 1
+						One.RN = 0
+						My.RN = My.RN + 1
+					End if
+				Next One
+				If	1/Universe.Infection_Period > Rnd()	Then	//回復する
+						My.Condition = 0
+						My.Counter = 0
 				End if
-			Next One
-		Elseif	My.Condition == 2	Then	//免疫をもったとき
-
-		End if
-	Elseif	Universe.Scenario == "SEIR_01"		Then
-		If 		My.Condition == 0	Then	//健康なとき
-
-		Elseif	My.Condition == 1	Then	//感染したとき
-			My.Counter = My.Counter+1	//感染期間を数える
-			For Each One in Neighbors	//感染させる
-				If One.Condition == 0 and Is_Infection() Then
-					If Universe.Incubation_Period <> 0	Then	//潜伏期間が0でないときは潜伏感染者になる
+			Elseif	My.Condition == 2	Then	//免疫をもったとき
+	
+			End if
+		Elseif	Universe.Scenario == "SI"		Then
+			If 		My.Condition == 0	Then	//健康なとき
+	
+			Elseif	My.Condition == 1	Then	//感染性をもったとき
+				My.Counter = My.Counter+1	//感染期間を数える
+				For Each One in Neighbors	//感染させる
+					If One.Condition == 0 and Is_Infection() Then
+						One.Condition = 1
+						One.RN = 0
+						My.RN = My.RN + 1
+					End if
+				Next One
+			Elseif	My.Condition == 2	Then	//免疫をもったとき
+	
+			End if
+		Elseif	Universe.Scenario == "SEIR_01"		Then
+			If 		My.Condition == 0	Then	//健康なとき
+	
+			Elseif	My.Condition == 1	Then	//感染したとき
+				My.Counter = My.Counter+1	//感染期間を数える
+				For Each One in Neighbors	//感染させる
+					If One.Condition == 0 and Is_Infection() Then
+						If Universe.Incubation_Period <> 0	Then	//潜伏期間が0でないときは潜伏感染者になる
+							One.Condition = 3
+							One.RN = 0
+							My.RN = My.RN + 1
+						Else										//潜伏期間が0のときはすぐに感染者にする
+							One.Condittion = 1
+							One.RN = 0
+							One.Counter = 0					
+						End if
+					End if
+				Next One
+				If	1/Universe.Infection_Period > Rnd()	Then	//回復する
+						My.Condition = 2
+						My.Counter = 0
+				End if
+			Elseif	My.Condition == 3	Then	//潜伏感染者のとき（感染性のない感染者）
+				My.Counter = My.Counter+1	//感染期間を数える
+				If	1/Universe.Incubation_Period > Rnd()	Then	//発症する
+						My.Condition = 1
+						My.Counter = 0
+				End if
+				If	1/Universe.Infection_Period > Rnd()	Then	//回復する
+						My.Condition = 2
+						My.Counter = 0
+				End if
+			End if
+		Elseif	Universe.Scenario == "SEIR_02"		Then
+			If 		My.Condition == 0	Then	//健康なとき
+	
+			Elseif	My.Condition == 1	Then	//感染したとき
+				My.Counter = My.Counter+1	//感染期間を数える
+				For Each One in Neighbors	//感染させる
+					If One.Condition == 0 and Is_Infection() Then
+						If Universe.Incubation_Period <> 0	Then	//潜伏期間が0でないときは潜伏感染者になる
+							One.Condition = 3
+							One.RN = 0			
+							My.RN = My.RN + 1
+						Else										//潜伏期間が0のときはすぐに感染者にする
+							One.Condittion = 1
+							One.RN = 0
+							One.Counter = 0
+						End if
+					End if
+				Next One
+				If	1/Universe.Infection_Period > Rnd()	 Then	//回復する
+						My.Condition = 2
+						if  0.01 > Rnd() Then  // and 入院していない
+						    // or  入院している  and  0.01  > Rnd()  Then
+							My.Condition = 4
+						End If
+						My.Counter = 0
+				End if
+			Elseif	My.Condition == 3	Then	//潜伏感染者のとき（感染性のある感染者）
+				My.Counter = My.Counter+1	//感染期間を数える
+				For Each One in Neighbors	//感染させる
+					If One.Condition == 0 and Is_Infection() Then
 						One.Condition = 3
 						One.RN = 0
 						My.RN = My.RN + 1
-					Else										//潜伏期間が0のときはすぐに感染者にする
-						One.Condittion = 1
-						One.RN = 0
-						One.Counter = 0					
 					End if
+				Next One
+				If	1/Universe.Incubation_Period > Rnd()	Then	//発症する
+						My.Condition = 1
+						My.Counter = 0
 				End if
-			Next One
-			If	1/Universe.Infection_Period > Rnd()	Then	//回復する
-					My.Condition = 2
-					My.Counter = 0
-			End if
-		Elseif	My.Condition == 3	Then	//潜伏感染者のとき（感染性のない感染者）
-			My.Counter = My.Counter+1	//感染期間を数える
-			If	1/Universe.Incubation_Period > Rnd()	Then	//発症する
-					My.Condition = 1
-					My.Counter = 0
-			End if
-			If	1/Universe.Infection_Period > Rnd()	Then	//回復する
-					My.Condition = 2
-					My.Counter = 0
+				If	1/Universe.Infection_Period > Rnd()	Then	//回復する
+						My.Condition = 2
+						My.Counter = 0
+				End if
+			End if	
+		Elseif	Universe.Scenario == "SIRS"		Then
+			If 		My.Condition == 0	Then	//健康なとき
+	
+			Elseif	My.Condition == 1	Then	//感染性をもったとき
+				My.Counter = My.Counter+1	//感染期間を数える
+				For Each One in Neighbors	//感染させる
+					If One.Condition == 0 and Is_Infection() Then
+						One.Condition = 1
+						One.RN = 0
+						My.RN = My.RN + 1
+					End if
+				Next One
+				If	1/Universe.Infection_Period > Rnd()	Then	//回復する
+				If	Universe.Immune_Period <> 0	Then		//免疫期間が0の設定のときは免疫を獲得しない
+						My.Condition = 2
+						My.Counter = 0
+				End if
+				End if
+			Elseif	My.Condition == 2	Then	//免疫をもったとき
+				If	1/Universe.Immune_Period > Rnd()	Then	//免疫がなくなる
+						My.Condition = 0
+						My.Counter = 0
+				End if
 			End if
 		End if
-	Elseif	Universe.Scenario == "SEIR_02"		Then
-		If 		My.Condition == 0	Then	//健康なとき
-
-		Elseif	My.Condition == 1	Then	//感染したとき
-			My.Counter = My.Counter+1	//感染期間を数える
-			For Each One in Neighbors	//感染させる
-				If One.Condition == 0 and Is_Infection() Then
-					If Universe.Incubation_Period <> 0	Then	//潜伏期間が0でないときは潜伏感染者になる
-						One.Condition = 3
-						One.RN = 0			
-						My.RN = My.RN + 1
-					Else										//潜伏期間が0のときはすぐに感染者にする
-						One.Condittion = 1
-						One.RN = 0
-						One.Counter = 0
-					End if
-				End if
-			Next One
-			If	1/Universe.Infection_Period > Rnd()	Then	//回復する
-					My.Condition = 2
-					My.Counter = 0
-			End if
-		Elseif	My.Condition == 3	Then	//潜伏感染者のとき（感染性のある感染者）
-			My.Counter = My.Counter+1	//感染期間を数える
-			For Each One in Neighbors	//感染させる
-				If One.Condition == 0 and Is_Infection() Then
-					One.Condition = 3
-					One.RN = 0
-					My.RN = My.RN + 1
-				End if
-			Next One
-			If	1/Universe.Incubation_Period > Rnd()	Then	//発症する
-					My.Condition = 1
-					My.Counter = 0
-			End if
-			If	1/Universe.Infection_Period > Rnd()	Then	//回復する
-					My.Condition = 2
-					My.Counter = 0
-			End if
-		End if	
-	Elseif	Universe.Scenario == "SIRS"		Then
-		If 		My.Condition == 0	Then	//健康なとき
-
-		Elseif	My.Condition == 1	Then	//感染性をもったとき
-			My.Counter = My.Counter+1	//感染期間を数える
-			For Each One in Neighbors	//感染させる
-				If One.Condition == 0 and Is_Infection() Then
-					One.Condition = 1
-					One.RN = 0
-					My.RN = My.RN + 1
-				End if
-			Next One
-			If	1/Universe.Infection_Period > Rnd()	Then	//回復する
-			If	Universe.Immune_Period <> 0	Then		//免疫期間が0の設定のときは免疫を獲得しない
-					My.Condition = 2
-					My.Counter = 0
-			End if
-			End if
-		Elseif	My.Condition == 2	Then	//免疫をもったとき
-			If	1/Universe.Immune_Period > Rnd()	Then	//免疫がなくなる
-					My.Condition = 0
-					My.Counter = 0
-			End if
-		End if	
-	End if		
-  
-	//Color_Adjustment
-	If 		My.Condition == 0	Then	//健常者（感受性者）
-			My.Color = RGB(0, 200, 0)
-	Elseif	My.Condition == 3	Then	//潜伏感染者	
-			My.Color = RGB(200, 200, 100)
-	Elseif	My.Condition == 1	Then	//感染者
-			My.Color = RGB(200, 0, 0)
-	Elseif	My.Condition == 2	Then	//免疫保持者（除外者）	
-			My.Color = RGB(0, 0, 200)
-	End if
+	  
+		//Color_Adjustment
+		If 		My.Condition == 0	Then	//健常者（感受性者）
+				My.Color = RGB(0, 200, 0)
+		Elseif	My.Condition == 3	Then	//潜伏感染者	
+				My.Color = RGB(200, 200, 100)
+		Elseif	My.Condition == 1	Then	//感染者
+				My.Color = RGB(200, 0, 0)
+		Elseif	My.Condition == 2	Then	//免疫保持者（除外者）	
+				My.Color = RGB(0, 0, 200)
+		Elseif	My.Condition == 4	Then	// 死亡者
+				My.Color = RGB(200, 200, 200)
+		End if
+	
+	End if  // 死亡してる場合は処理しない。
 }
 
 
@@ -682,18 +691,18 @@ Time_Graph {
     Title = "";
     Disable = No;
     Background_Color = 255, 255, 255;
-    Remarks = No;
+    Remarks = Yes;
     Legend_Pos = Top;
     FastDraw = No;
     Position_x = 686;
     Position_y = -1;
-    Size_x = 550;
+    Size_x = 601;
     Size_y = 444;
     Map_Cell_Size = -1;
     Axis_Label = "", "";
     Draw_By_JFree_Chart = Yes;
-    Scale = 0, 0.0, 0, 1.0, 10, 0.2;
-    ScaleAuto = Yes, No;
+    Scale = 0, 0.0, 0, 1.0, 144, 0.2;
+    ScaleAuto = No, No;
     Output_Group_Name = "";
     Output {
         Graph_Element_Name = "";
@@ -745,6 +754,16 @@ Time_Graph {
         Effective_Fraction_Figures = 0;
         Graph_Element_Color = (255, 153, 0);
     }
+    Output {
+        Graph_Element_Name = "D";
+        Line_Color = 255, 0, 0;
+        Line_Width = 2;
+        Marker_Id = 0;
+        Output_Expression = "";
+        Expression_Value_Display = No;
+        Effective_Fraction_Figures = 0;
+        Graph_Element_Color = (0, 0, 0);
+    }
 }
 
 
@@ -769,7 +788,7 @@ Time_Graph {
     FastDraw = No;
     Position_x = 687;
     Position_y = 444;
-    Size_x = 549;
+    Size_x = 599;
     Size_y = 358;
     Map_Cell_Size = -1;
     Axis_Label = "", "";
@@ -794,7 +813,7 @@ Time_Graph {
 // Control Panel Definition Division
 //-------------------------------------------------------
 Control_Panel {
-    Display_Area = 37, 23, 1248, 100;
+    Display_Area = 0, 23, 1248, 100;
     Display_Type = 0;
     Panel_Item {
         Item_Type = Drop_Down_List;
@@ -1001,7 +1020,7 @@ Network_Info {
 //-------------------------------------------------------
 Window_Rectangle {
     Window_Name = Main_Window, -129, -1057, 1786, 951;
-    Window_Name = Output_Setting_Window, 175, 175, 480, 350;
+    Window_Name = Output_Setting_Window, 668, 300, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
 
