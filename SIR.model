@@ -304,7 +304,7 @@ Agt_Step{
   End if
 
   // 外出確率を計算する（外出する場合は、my.go_dest = 1 にする）
-  Set_Go_Out_Rate(my, True)    // 自粛ありの場合は、第２引数を True にする。
+	Set_Go_Out_Rate(my)    // 自粛ありの場合は、第２引数を True にする。
 
 	// 会社に留まる時間をカウント
   if my.is_stay == 1 and my.go_home == 0 Then
@@ -506,7 +506,7 @@ Agt_Step{
 
 // 【関数】外出確率を計算 → 外出するかを決める。
 // Is_stay_home : 自粛あり？
-Sub Set_Go_Out_Rate(One As Agt, Is_stay_home As Boolean) {
+Sub Set_Go_Out_Rate(One As Agt) {
   Dim go_out_rate As Double
   Dim stress_val As Double
   
@@ -515,27 +515,17 @@ Sub Set_Go_Out_Rate(One As Agt, Is_stay_home As Boolean) {
   stress_val = 0
   
   if GetCountStep() Mod 144 == 1 Then
-  
     if One.type == 0 Then // 会社員
-      // 自粛ストレス値
-      if Is_stay_home Then
-        // 囚人のジレンマ
-        stress_val = 0
-      End if
+      // 自粛ストレス値（囚人のジレンマ）
+      stress_val = 0
       go_out_rate = 0.99 - stress_val
     Elseif One.type == 1 Then //主夫 主婦
-      // 自粛ストレス値
-      if Is_stay_home Then
-        // 囚人のジレンマ
-        stress_val = 0
-      End if
+      // 自粛ストレス値（囚人のジレンマ）
+      stress_val = 0
       go_out_rate = 0.50 - stress_val
     Elseif One.type == 2 Then //学生
-      // 自粛ストレス値
-      if Is_stay_home Then
-        // 囚人のジレンマ
-        stress_val = 0
-      End if
+      // 自粛ストレス値（囚人のジレンマ）
+      stress_val = 0
       go_out_rate = 0.99 - stress_val
     End if
 
@@ -543,7 +533,6 @@ Sub Set_Go_Out_Rate(One As Agt, Is_stay_home As Boolean) {
     if Rnd() < go_out_rate Then
       One.go_dest = 1    // go_dest が 1なら、目的地に向かう
     End if
-    
   End if
 }
 
@@ -603,10 +592,10 @@ Map_Output {
     Title = "";
     Disable = No;
     Background_Color = 255, 255, 255;
-    Position_x = 192;
-    Position_y = -4;
-    Size_x = 484;
-    Size_y = 490;
+    Position_x = 190;
+    Position_y = -1;
+    Size_x = 498;
+    Size_y = 525;
     Map_Cell_Size = 5;
     Remarks = No;
     Legend_Pos = Top;
@@ -696,9 +685,9 @@ Time_Graph {
     Remarks = No;
     Legend_Pos = Top;
     FastDraw = No;
-    Position_x = 679;
+    Position_x = 686;
     Position_y = -1;
-    Size_x = 557;
+    Size_x = 550;
     Size_y = 444;
     Map_Cell_Size = -1;
     Axis_Label = "", "";
@@ -805,7 +794,7 @@ Time_Graph {
 // Control Panel Definition Division
 //-------------------------------------------------------
 Control_Panel {
-    Display_Area = 268, 535, 1248, 116;
+    Display_Area = 37, 23, 1248, 100;
     Display_Type = 0;
     Panel_Item {
         Item_Type = Drop_Down_List;
@@ -882,7 +871,7 @@ Control_Panel {
         Slider_Range_Max = 20;
         Slider_Value_Min = 4.0;
         Slider_Value_Step = 0.1;
-        Slider_Value = "10";
+        Slider_Value = "0";
     }
     Panel_Item {
         Item_Type = Slider;
@@ -898,7 +887,7 @@ Control_Panel {
         Slider_Range_Max = 100;
         Slider_Value_Min = 0.0;
         Slider_Value_Step = 0.01;
-        Slider_Value = "5";
+        Slider_Value = "3";
     }
     Panel_Item {
         Item_Type = Slider;
@@ -946,7 +935,7 @@ Control_Panel {
         Slider_Range_Max = 5;
         Slider_Value_Min = 2.0;
         Slider_Value_Step = 1.0;
-        Slider_Value = "2";
+        Slider_Value = "3";
     }
 }
 
@@ -971,13 +960,13 @@ Others_Data {
     Debug_Size_x = 400;
     Debug_Size_y = 200;
     Console_Position_x = 190;
-    Console_Position_y = 485;
+    Console_Position_y = 522;
     Console_Size_x = 497;
-    Console_Size_y = 322;
+    Console_Size_y = 285;
     Componen_Tree_Position_x = 2;
     Componen_Tree_Position_y = 2;
-    Componen_Tree_Size_x = 190;
-    Componen_Tree_Size_y = 809;
+    Componen_Tree_Size_x = 195;
+    Componen_Tree_Size_y = 825;
     Console_Background_Color = 16777215;
     Console_Foreground_Color = 255;
     Console_DisplayLines_Max = 500;
@@ -1011,7 +1000,7 @@ Network_Info {
 // Window Location Definition Division
 //-------------------------------------------------------
 Window_Rectangle {
-    Window_Name = Main_Window, 0, 23, 800, 700;
+    Window_Name = Main_Window, -129, -1057, 1786, 951;
     Window_Name = Output_Setting_Window, 175, 175, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
