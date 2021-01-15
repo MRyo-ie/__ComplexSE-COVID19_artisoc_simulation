@@ -82,6 +82,7 @@ Univ_Init{
 	Universe.Infection_Period = Universe.Infection_Period * 24 * 6
 	Universe.Incubation_Period = Universe.Incubation_Period * 24 * 6
 //	printLn("Universe.Infection_Period : " & Universe.Infection_Period)
+	Universe.Immune_Period = Universe.Incubation_Period * 24 * 6
 	
 	For i = 0 To Universe.Population - 1
 		One = CreateAgt(Universe.Field.Walker)
@@ -242,7 +243,7 @@ Sub Set_Go_Out_Time_And_Stay(One As Agt) {
   	//±90m =  Randint(0,18) - 9 
   	my.time_go_office = 63 + Int(Rnd() * 19) - 9
   	//滞在時間。 10 ~ 30分
-  	my.time_stay = 50 + Int(Rnd() * 3)
+  	my.time_stay = 1 + Int(Rnd() * 3)
   Elseif my.type == 2 Then //学生
   	//8:30 = 10 * 6 + 3 = 60+ 3 = 63
   	//±90m =  Randint(0,18) - 9 
@@ -337,14 +338,14 @@ Agt_Step{
 	End if	
 	
 	//Condition_Adjustment
-  MakeAllAgtsetAroundOwn(Neighbors, 10/4000, False)
+  MakeAllAgtsetAroundOwn(Neighbors, 0.02, False)
   If Universe.Scenario == "SIR"    Then
     If     My.Condition == 0  Then  //健康なとき
 
 		Elseif	My.Condition == 1	Then	//感染性をもったとき
 			My.Counter = My.Counter+1	//感染期間を数える
 			For Each One in Neighbors	//感染させる
-				If One.Condition == 0 and Rnd() < Universe.Infection_Rate Then
+				If One.Condition == 0 and Is_Infection() Then
 					One.Condition = 1
 					One.RN = 0
 					My.RN = My.RN + 1
@@ -363,7 +364,7 @@ Agt_Step{
 		Elseif	My.Condition == 1	Then	//感染性をもったとき
 			My.Counter = My.Counter+1	//感染期間を数える
 			For Each One in Neighbors	//感染させる
-				If One.Condition == 0 and Rnd() < Universe.Infection_Rate Then
+				If One.Condition == 0 and Is_Infection() Then
 					One.Condition = 1
 					One.RN = 0
 					My.RN = My.RN + 1
@@ -382,7 +383,7 @@ Agt_Step{
 		Elseif	My.Condition == 1	Then	//感染性をもったとき
 			My.Counter = My.Counter+1	//感染期間を数える
 			For Each One in Neighbors	//感染させる
-				If One.Condition == 0 and Rnd() < Universe.Infection_Rate Then
+				If One.Condition == 0 and Is_Infection() Then
 					One.Condition = 1
 					One.RN = 0
 					My.RN = My.RN + 1
@@ -397,7 +398,7 @@ Agt_Step{
 		Elseif	My.Condition == 1	Then	//感染したとき
 			My.Counter = My.Counter+1	//感染期間を数える
 			For Each One in Neighbors	//感染させる
-				If One.Condition == 0 and Rnd() < Universe.Infection_Rate Then
+				If One.Condition == 0 and Is_Infection() Then
 					If Universe.Incubation_Period <> 0	Then	//潜伏期間が0でないときは潜伏感染者になる
 						One.Condition = 3
 						One.RN = 0
@@ -430,7 +431,7 @@ Agt_Step{
 		Elseif	My.Condition == 1	Then	//感染したとき
 			My.Counter = My.Counter+1	//感染期間を数える
 			For Each One in Neighbors	//感染させる
-				If One.Condition == 0 and Rnd() < Universe.Infection_Rate Then
+				If One.Condition == 0 and Is_Infection() Then
 					If Universe.Incubation_Period <> 0	Then	//潜伏期間が0でないときは潜伏感染者になる
 						One.Condition = 3
 						One.RN = 0			
@@ -449,7 +450,7 @@ Agt_Step{
 		Elseif	My.Condition == 3	Then	//潜伏感染者のとき（感染性のある感染者）
 			My.Counter = My.Counter+1	//感染期間を数える
 			For Each One in Neighbors	//感染させる
-				If One.Condition == 0 and Rnd() < Universe.Infection_Rate Then
+				If One.Condition == 0 and Is_Infection() Then
 					One.Condition = 3
 					One.RN = 0
 					My.RN = My.RN + 1
@@ -470,7 +471,7 @@ Agt_Step{
 		Elseif	My.Condition == 1	Then	//感染性をもったとき
 			My.Counter = My.Counter+1	//感染期間を数える
 			For Each One in Neighbors	//感染させる
-				If One.Condition == 0 and Rnd() < Universe.Infection_Rate Then
+				If One.Condition == 0 and Is_Infection() Then
 					One.Condition = 1
 					One.RN = 0
 					My.RN = My.RN + 1
@@ -544,6 +545,19 @@ Sub Set_Go_Out_Rate(One As Agt, Is_stay_home As Boolean) {
     End if
     
   End if
+}
+
+
+Function Is_Infection() As Boolean {
+  Dim is_Infected As Boolean
+  Dim rnd_val As Boolean
+
+  is_Infected = false
+  // 10分ごとに判定が入るので、
+  if Rnd() < 0.0005  Then
+  	is_Infected = true
+  End If
+	return is_Infected
 }
 #end_rule UNIVERSE.FIELD.WALKER
 
@@ -791,7 +805,7 @@ Time_Graph {
 // Control Panel Definition Division
 //-------------------------------------------------------
 Control_Panel {
-    Display_Area = 93, 966, 1260, 100;
+    Display_Area = 268, 535, 1248, 116;
     Display_Type = 0;
     Panel_Item {
         Item_Type = Drop_Down_List;
@@ -817,10 +831,10 @@ Control_Panel {
         Font_Color = 0, 0, 0;
         Font_Background_Color = 0, 0, 0;
         Var_Name = "Universe.Population";
-        Slider_Range_Max = 300;
-        Slider_Value_Min = 0.0;
+        Slider_Range_Max = 190;
+        Slider_Value_Min = 100.0;
         Slider_Value_Step = 10.0;
-        Slider_Value = "165";
+        Slider_Value = "155";
     }
     Panel_Item {
         Item_Type = Slider;
@@ -849,7 +863,7 @@ Control_Panel {
         Font_Color = 0, 0, 0;
         Font_Background_Color = 0, 0, 0;
         Var_Name = "Universe.Initial_Infected";
-        Slider_Range_Max = 299;
+        Slider_Range_Max = 79;
         Slider_Value_Min = 1.0;
         Slider_Value_Step = 1.0;
         Slider_Value = "9";
@@ -868,7 +882,7 @@ Control_Panel {
         Slider_Range_Max = 20;
         Slider_Value_Min = 4.0;
         Slider_Value_Step = 0.1;
-        Slider_Value = "0";
+        Slider_Value = "10";
     }
     Panel_Item {
         Item_Type = Slider;
@@ -884,7 +898,7 @@ Control_Panel {
         Slider_Range_Max = 100;
         Slider_Value_Min = 0.0;
         Slider_Value_Step = 0.01;
-        Slider_Value = "3";
+        Slider_Value = "5";
     }
     Panel_Item {
         Item_Type = Slider;
@@ -932,7 +946,7 @@ Control_Panel {
         Slider_Range_Max = 5;
         Slider_Value_Min = 2.0;
         Slider_Value_Step = 1.0;
-        Slider_Value = "3";
+        Slider_Value = "2";
     }
 }
 
@@ -997,8 +1011,8 @@ Network_Info {
 // Window Location Definition Division
 //-------------------------------------------------------
 Window_Rectangle {
-    Window_Name = Main_Window, 0, 23, 1328, 879;
-    Window_Name = Output_Setting_Window, 674, 293, 480, 350;
+    Window_Name = Main_Window, 0, 23, 800, 700;
+    Window_Name = Output_Setting_Window, 175, 175, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
 
@@ -1036,6 +1050,8 @@ Model_Description {
         Function Agt_Step {
         }
         Function Set_Go_Out_Rate {
+        }
+        Function Is_Infection {
         }
     }
 }
