@@ -308,7 +308,7 @@ Agt_Step{
 	  End if
 	
 	  // 外出確率を計算する（外出する場合は、my.go_dest = 1 にする）
-		Set_Go_Out_Rate(my)    // 自粛ありの場合は、第２引数を True にする。
+		Set_Go_Out_Rate(my, False)    // 自粛ありの場合は、第２引数を True にする。
 	
 		// 会社に留まる時間をカウント
 	  if my.is_stay == 1 and my.go_home == 0 Then
@@ -520,38 +520,54 @@ Agt_Step{
 
 
 // 【関数】外出確率を計算 → 外出するかを決める。
-// Is_stay_home : 自粛あり？
-Sub Set_Go_Out_Rate(One As Agt) {
+Sub Set_Go_Out_Rate(One As Agt, Is_Prisoners_Dilemma As Boolean) {
   Dim go_out_rate As Double
   Dim stress_val As Double
   
   // 1日1回、目的地に行くかどうかを決める。
   // 自粛判定もこっちに入れてくれると助かる
-  stress_val = 0
-  
-  if GetCountStep() Mod 144 == 1 Then
-    if One.type == 0 Then // 会社員
-      // 自粛ストレス値（囚人のジレンマ）
-      stress_val = 0
-      go_out_rate = 0.99 - stress_val
-    Elseif One.type == 1 Then //主夫 主婦
-      // 自粛ストレス値（囚人のジレンマ）
-      stress_val = 0
-      go_out_rate = 0.50 - stress_val
-    Elseif One.type == 2 Then //学生
-      // 自粛ストレス値（囚人のジレンマ）
-      stress_val = 0
-      go_out_rate = 0.99 - stress_val
-    End if
 
-    // 外出するか決める。
-    if Rnd() < go_out_rate Then
-      One.go_dest = 1    // go_dest が 1なら、目的地に向かう
+  // 囚人のジレンマ
+  if Is_Prisoners_Dilemma Then
+  	if GetCountStep() Mod 144 == 1 Then
+	    if One.type == 0 Then // 会社員
+	      One.go_dest = 1    // go_dest が 1なら、目的地に向かう
+	    Elseif One.type == 1 Then //主夫 主婦
+	      One.go_dest = 1    // go_dest が 1なら、目的地に向かう
+	    Elseif One.type == 2 Then //学生
+	      One.go_dest = 1    // go_dest が 1なら、目的地に向かう
+	    End if
+    End if
+    
+  // 通常
+  Else
+	  if GetCountStep() Mod 144 == 1 Then
+	    if One.type == 0 Then // 会社員
+	      go_out_rate = 0.99
+	    Elseif One.type == 1 Then //主夫 主婦
+	      go_out_rate = 0.50 - stress_val
+	    Elseif One.type == 2 Then //学生
+	      go_out_rate = 0.99 - stress_val
+	    End if
+	    // 外出するか決める。
+	    if Rnd() < go_out_rate Then
+	      One.go_dest = 1    // go_dest が 1なら、目的地に向かう
+	    End if
     End if
   End if
 }
 
+// 【関数】囚人のジレンマ（戦略の決定）
+Sub Set_Prisoners_Dilemma_Strategy(One As Agt) {
+}
 
+// 【関数】囚人のジレンマ（総利得を計算 → 戦略を比較）
+Sub Calc_Prisoners_Dilemma_Gain(One As Agt) {
+}
+
+
+
+// 【関数】感染判定
 Function Is_Infection() As Boolean {
   Dim is_Infected As Boolean
   Dim rnd_val As Boolean
@@ -563,6 +579,14 @@ Function Is_Infection() As Boolean {
   End If
 	return is_Infected
 }
+
+
+
+// 【関数】病院システム
+Sub Set_Hospital(One As Agt) {
+}
+
+
 #end_rule UNIVERSE.FIELD.WALKER
 
 
@@ -1065,7 +1089,13 @@ Model_Description {
         }
         Function Set_Go_Out_Rate {
         }
+        Function Set_Prisoners_Dilemma_Strategy {
+        }
+        Function Calc_Prisoners_Dilemma_Gain {
+        }
         Function Is_Infection {
+        }
+        Function Set_Hospital {
         }
     }
 }
