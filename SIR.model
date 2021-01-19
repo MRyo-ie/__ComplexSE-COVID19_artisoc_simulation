@@ -12,7 +12,7 @@ Version = 4.2.1;
 // Component Tree
 //-------------------------------------------------------
 UNIVERSE {
-    Space Field(0,0),Square_2D(100, 100, Loop, North, 1, !Map_3D){
+    Space Field(0,0),Square_2D(110, 100, Loop, North, 1, !Map_3D){
         AgtType Walker(0, 0)[0] {
             Dim ID(0, 0) As Integer = (0);
             Dim X(0, 0) As Double = (0.0);
@@ -298,6 +298,9 @@ Agt_Step{
 	  // 家と目的地の座標を保存する (最初だけ起動)
 	  if my.set_home == 0 Then
 	    	// 「自宅の座標」を設定
+	    	do while my.X > 100 
+	    		my.X = Int(Rnd()*100)
+    		Loop
 		  my.home_x = my.X
 		  my.home_y = my.Y
 	  	Set_Go_Out_xy(my)
@@ -449,6 +452,9 @@ Agt_Step{
 						if  0.01 > Rnd() Then  // and 入院していない
 						    // or  入院している  and  0.01  > Rnd()  Then
 							My.Condition = 4
+							my.X = 105
+							my.Y = Int(my.Y /2)
+//							printLn("[Info] dead.")
 						End If
 						My.Counter = 0
 				End if
@@ -497,16 +503,16 @@ Agt_Step{
 		End if
 	  
 		//Color_Adjustment
-		If 		My.Condition == 0	Then	//健常者（感受性者）
+		If 		My.Condition == 0	Then	// S:健常者（感受性者）
 				My.Color = RGB(0, 200, 0)
-		Elseif	My.Condition == 3	Then	//潜伏感染者	
+		Elseif	My.Condition == 3	Then	// E:潜伏感染者	
 				My.Color = RGB(200, 200, 100)
-		Elseif	My.Condition == 1	Then	//感染者
+		Elseif	My.Condition == 1	Then	// I:感染者
 				My.Color = RGB(200, 0, 0)
-		Elseif	My.Condition == 2	Then	//免疫保持者（除外者）	
+		Elseif	My.Condition == 2	Then	// R:免疫保持者（除外者）	
 				My.Color = RGB(0, 0, 200)
-		Elseif	My.Condition == 4	Then	// 死亡者
-				My.Color = RGB(200, 200, 200)
+		Elseif	My.Condition == 4	Then	// D:死亡者
+				My.Color = RGB(10, 10, 10)
 		End if
 	
 	End if  // 死亡してる場合は処理しない。
@@ -604,7 +610,7 @@ Map_Output {
     Position_x = 190;
     Position_y = -1;
     Size_x = 498;
-    Size_y = 525;
+    Size_y = 490;
     Map_Cell_Size = 5;
     Remarks = No;
     Legend_Pos = Top;
@@ -618,7 +624,7 @@ Map_Output {
     Draw_Timing = Simulation_Step;
     Draw_Interval = 1;
     Axis_Label = "", "";
-    Draw_Range = 0, 0, 100, 100;
+    Draw_Range = 0, 0, 110, 100;
     Ruled_Line = No;
     Text_Display = No;
     Text_Display_Variable_Name = "Universe.Scenario";
@@ -979,13 +985,13 @@ Others_Data {
     Debug_Size_x = 400;
     Debug_Size_y = 200;
     Console_Position_x = 190;
-    Console_Position_y = 522;
+    Console_Position_y = 485;
     Console_Size_x = 497;
-    Console_Size_y = 285;
+    Console_Size_y = 322;
     Componen_Tree_Position_x = 2;
     Componen_Tree_Position_y = 2;
-    Componen_Tree_Size_x = 195;
-    Componen_Tree_Size_y = 825;
+    Componen_Tree_Size_x = 210;
+    Componen_Tree_Size_y = 831;
     Console_Background_Color = 16777215;
     Console_Foreground_Color = 255;
     Console_DisplayLines_Max = 500;
@@ -1019,8 +1025,8 @@ Network_Info {
 // Window Location Definition Division
 //-------------------------------------------------------
 Window_Rectangle {
-    Window_Name = Main_Window, 385, -1057, 1367, 937;
-    Window_Name = Output_Setting_Window, 458, 293, 480, 350;
+    Window_Name = Main_Window, -136, -1057, 1870, 953;
+    Window_Name = Output_Setting_Window, 710, 301, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
 
