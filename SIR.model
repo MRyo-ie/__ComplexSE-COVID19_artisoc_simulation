@@ -699,9 +699,9 @@ Time_Graph {
     Size_x = 601;
     Size_y = 444;
     Map_Cell_Size = -1;
-    Axis_Label = "", "";
+    Axis_Label = "（/ 5日）", "";
     Draw_By_JFree_Chart = Yes;
-    Scale = 0, 0.0, 0, 1.0, 144, 0.2;
+    Scale = 0, 0.0, 0, 1.0, 720, 0.2;
     ScaleAuto = No, No;
     Output_Group_Name = "";
     Output {
@@ -1019,8 +1019,8 @@ Network_Info {
 // Window Location Definition Division
 //-------------------------------------------------------
 Window_Rectangle {
-    Window_Name = Main_Window, -129, -1057, 1786, 951;
-    Window_Name = Output_Setting_Window, 668, 300, 480, 350;
+    Window_Name = Main_Window, 385, -1057, 1367, 937;
+    Window_Name = Output_Setting_Window, 458, 293, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
 
