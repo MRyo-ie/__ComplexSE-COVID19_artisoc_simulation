@@ -36,6 +36,7 @@ UNIVERSE {
             Dim type(0, 0) As Integer = (0);
             Dim stay_count(0, 0) As Integer = (0);
             Dim go_dest(0, 0) As Integer = (0);
+            Dim benefit(0, 0) As Integer = ();
         }
     }
     Dim Scenario(0, 0) As String = ("");
@@ -49,6 +50,8 @@ UNIVERSE {
     Dim Speed(0, 0) As Double = (0.0);
     Dim Rate_SIR(0, 0) <1> [10] As Double = (10*0.0);
     Dim AverageRN(0, 0) As Double = (0.0);
+    Dim Sum_benefit(0, 0) As Long = ();
+    Dim Average_benefit(0, 0) As Integer = ();
 }
 
 
@@ -175,6 +178,13 @@ Univ_Step_End{
 	For i = 0 to 4
 		Universe.Rate_SIR(i)=Universe.Rate_SIR(i)/CountAgtset(Walkers) 
 	Next i
+
+	//	総報酬
+	Universe.Sum_benefit = 0
+	For Each One in Walkers	//まず数を数えておく
+		Universe.Sum_benefit = Universe.Sum_benefit + One.benefit
+	Next One
+	Universe.Average_benefit = Universe.Sum_benefit/CountAgtset(Walkers) 
 	//Rate_Sir(0)=健常者（感受性者）の比率
 	//Rate_Sir(3)=潜伏感染者（潜伏感受性者）の比率
 	//Rate_Sir(1)=感染者の比率
@@ -223,9 +233,25 @@ Agt_Init{
   my.go_home = 0
   my.is_stay = 1
   my.stay_count = 0
+  my.benefit = 0 // エージェントの利得
   // これコメントアウトすると、時間帯が固定されて、目的地に集まってる様子が見れる
   // my.time_go_office = 51 
   // my.time_stay = my.time_go_office + 36
+}
+
+// エージェントごとに利得を追加
+Sub add_to_benefit(One As Agt) {
+	if One.go_dest == 1 Then
+		One.benefit = One.benefit + 3
+	Else
+		One.benefit = One.benefit + 1
+	End if
+	
+	if One.Condition == 1 Then //感染状態
+		One.benefit = One.benefit - 4	
+  Elseif One.Condition == 4 Then //死亡状態
+  	One.benefit = One.benefit - 5
+  End if
 }
 
 
@@ -314,6 +340,11 @@ Agt_Step{
 	  if my.is_stay == 1 and my.go_home == 0 Then
 	  	my.stay_count = my.stay_count + 1
 	  End if
+
+		//	一日の終わりに報酬を追加する
+		if GetCountStep() Mod 144 == 0 Then
+			add_to_benefit(my)
+		End if
 	
 	  // 指定したstepで移動するフラグをたてる
 	  if GetCountStep() Mod 144 == my.time_go_office and my.go_dest == 1 Then
@@ -545,9 +576,9 @@ Sub Set_Go_Out_Rate(One As Agt, Is_Prisoners_Dilemma As Boolean) {
 	    if One.type == 0 Then // 会社員
 	      go_out_rate = 0.99
 	    Elseif One.type == 1 Then //主夫 主婦
-	      go_out_rate = 0.50 - stress_val
+	      go_out_rate = 0.50 - 0.2
 	    Elseif One.type == 2 Then //学生
-	      go_out_rate = 0.99 - stress_val
+	      go_out_rate = 0.99 - 0.2
 	    End if
 	    // 外出するか決める。
 	    if Rnd() < go_out_rate Then
@@ -585,7 +616,6 @@ Function Is_Infection() As Boolean {
 // 【関数】病院システム
 Sub Set_Hospital(One As Agt) {
 }
-
 
 #end_rule UNIVERSE.FIELD.WALKER
 
@@ -811,7 +841,7 @@ Time_Graph {
     Draw_Interval = 1;
     Graph_Name = "平均実行再生産数";
     Title = "AverageReproductionNumber";
-    Disable = No;
+    Disable = Yes;
     Background_Color = 255, 255, 255;
     Remarks = No;
     Legend_Pos = Top;
@@ -840,10 +870,52 @@ Time_Graph {
 
 
 //-------------------------------------------------------
+// Time Graph Output Definition Division
+//-------------------------------------------------------
+Time_Graph {
+    Font_Name = "Dialog";
+    Font_Char_Set = 81;
+    Font_Size = 12.0;
+    Font_Style = 0;
+    Font_Color = 0, 0, 0;
+    Font_Background_Color = 255, 255, 255;
+    Draw_Timing = Simulation_Step;
+    Draw_Interval = 1;
+    Graph_Name = "総報酬";
+    Title = "";
+    Disable = No;
+    Background_Color = 255, 255, 255;
+    Remarks = Yes;
+    Legend_Pos = Top;
+    FastDraw = No;
+    Position_x = 699;
+    Position_y = 443;
+    Size_x = 587;
+    Size_y = 363;
+    Map_Cell_Size = -1;
+    Axis_Label = "日", "総報酬";
+    Draw_By_JFree_Chart = Yes;
+    Scale = 0, 0.0, 1000, 100.0, 144, 10.0;
+    ScaleAuto = No, Yes;
+    Output_Group_Name = "";
+    Output {
+        Graph_Element_Name = "総報酬";
+        Line_Color = 255, 0, 255;
+        Line_Width = 2;
+        Marker_Id = 0;
+        Output_Expression = "Universe.Sum_benefit";
+        Expression_Value_Display = No;
+        Effective_Fraction_Figures = 0;
+        Graph_Element_Color = (0, 255, 0);
+    }
+}
+
+
+//-------------------------------------------------------
 // Control Panel Definition Division
 //-------------------------------------------------------
 Control_Panel {
-    Display_Area = 0, 23, 1248, 100;
+    Display_Area = 432, 831, 1248, 100;
     Display_Type = 0;
     Panel_Item {
         Item_Type = Drop_Down_List;
@@ -1049,8 +1121,8 @@ Network_Info {
 // Window Location Definition Division
 //-------------------------------------------------------
 Window_Rectangle {
-    Window_Name = Main_Window, -136, -1057, 1870, 953;
-    Window_Name = Output_Setting_Window, 710, 301, 480, 350;
+    Window_Name = Main_Window, 1882, 26, 1557, 937;
+    Window_Name = Output_Setting_Window, 553, 293, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
 
@@ -1080,6 +1152,8 @@ Model_Description {
     }
     Agent Universe.Field.Walker {
         Function Agt_Init {
+        }
+        Function add_to_benefit {
         }
         Function Set_Go_Out_Time_And_Stay {
         }
