@@ -36,7 +36,7 @@ UNIVERSE {
             Dim type(0, 0) As Integer = (0);
             Dim stay_count(0, 0) As Integer = (0);
             Dim go_dest(0, 0) As Integer = (0);
-            Dim benefit(0, 0) As Integer = ();
+            Dim benefit(0, 0) As Integer = (0);
         }
     }
     Dim Scenario(0, 0) As String = ("");
@@ -50,8 +50,8 @@ UNIVERSE {
     Dim Speed(0, 0) As Double = (0.0);
     Dim Rate_SIR(0, 0) <1> [10] As Double = (10*0.0);
     Dim AverageRN(0, 0) As Double = (0.0);
-    Dim Sum_benefit(0, 0) As Long = ();
-    Dim Average_benefit(0, 0) As Integer = ();
+    Dim Sum_benefit(0, 0) As Long = (0);
+    Dim Average_benefit(0, 0) As Integer = (0);
 }
 
 
@@ -241,22 +241,6 @@ Agt_Init{
   // my.time_stay = my.time_go_office + 36
 }
 
-// エージェントごとに利得を追加
-Sub add_to_benefit(One As Agt) {
-	if One.go_dest == 1 Then
-		One.benefit = One.benefit + 3
-	Else
-		One.benefit = One.benefit + 1
-	End if
-	
-	if One.Condition == 1 Then //感染状態
-		One.benefit = One.benefit - 4	
-  Elseif One.Condition == 4 Then //死亡状態
-  	One.benefit = One.benefit - 5
-  End if
-}
-
-
 // 【関数】目的地への「出発時間」と「滞在時間」を設定する。
 Sub Set_Go_Out_Time_And_Stay(One As Agt) {
 	my.time_go_office = 51 + Int(Rnd() * 19) - 9
@@ -286,6 +270,9 @@ Sub Set_Go_Out_Time_And_Stay(One As Agt) {
   End if
   */
 }
+
+///////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
 
 // 【関数】目的地の「座標」を設定する。
 Sub Set_Go_Out_xy(One As Agt) {
@@ -317,9 +304,6 @@ Sub Set_Go_Out_xy(One As Agt) {
 }
 
 
-
-
-
 Agt_Step{
 	Dim i As Integer	
 	Dim Neighbors As Agtset
@@ -342,8 +326,10 @@ Agt_Step{
 	  End if
 	
 	  // 外出確率を計算する（外出する場合は、my.go_dest = 1 にする）
-		Set_Go_Out_Rate(my, False)    // 自粛ありの場合は、第２引数を True にする。
-	
+    if GetCountStep() Mod 144 == 1 Then
+	  	Set_Go_Out_Rate(my, True)
+    End if
+	  
 		// 会社に留まる時間をカウント
 	  if my.is_stay == 1 and my.go_home == 0 Then
 	  	my.stay_count = my.stay_count + 1
@@ -351,7 +337,7 @@ Agt_Step{
 
 		//	一日の終わりに報酬を追加する
 		if GetCountStep() Mod 144 == 0 Then
-			add_to_benefit(my)
+	  	add_to_benefit(my)
 		End if
 	
 	  // 指定したstepで移動するフラグをたてる
@@ -363,6 +349,7 @@ Agt_Step{
 	  	my.is_stay = 0
 	  	my.stay_count = 0
 	  End If
+	  
 	  // Movement
 	  if my.is_stay == 0 Then
 			if my.go_home == 0 Then
@@ -568,7 +555,6 @@ Sub Set_Go_Out_Rate(One As Agt, Is_Prisoners_Dilemma As Boolean) {
 
   // 囚人のジレンマ
   if Is_Prisoners_Dilemma Then
-  	if GetCountStep() Mod 144 == 1 Then
 	    if One.type == 0 Then // 会社員
 	      One.go_dest = 1    // go_dest が 1なら、目的地に向かう
 	    Elseif One.type == 1 Then //主夫 主婦
@@ -576,11 +562,8 @@ Sub Set_Go_Out_Rate(One As Agt, Is_Prisoners_Dilemma As Boolean) {
 	    Elseif One.type == 2 Then //学生
 	      One.go_dest = 1    // go_dest が 1なら、目的地に向かう
 	    End if
-    End if
-    
   // 通常
   Else
-	  if GetCountStep() Mod 144 == 1 Then
 	  	go_out_rate = 0.99
 	  	/*
 	    if One.type == 0 Then // 会社員
@@ -595,17 +578,38 @@ Sub Set_Go_Out_Rate(One As Agt, Is_Prisoners_Dilemma As Boolean) {
 	    if Rnd() < go_out_rate Then
 	      One.go_dest = 1    // go_dest が 1なら、目的地に向かう
 	    End if
-    End if
   End if
 }
 
 // 【関数】囚人のジレンマ（戦略の決定）
-Sub Set_Prisoners_Dilemma_Strategy(One As Agt) {
+Sub Set_PD_Strategy(One As Agt, strategy As Integer) {
+	// 【戦略】1. ランダム
+	// 【戦略】2. 常に協力（自粛する）
+	// 【戦略】3. 常に非協力（自粛しない）
+
+	// 【戦略】4. オリジナル？： 
+
 }
 
 // 【関数】囚人のジレンマ（総利得を計算 → 戦略を比較）
-Sub Calc_Prisoners_Dilemma_Gain(One As Agt) {
+Sub Calc_PD_Gain(One As Agt) {
 }
+
+// エージェントごとに利得を追加
+Sub add_to_benefit(One As Agt) {
+	if One.go_dest == 1 Then
+		One.benefit = One.benefit + 3
+	Else
+		One.benefit = One.benefit + 1
+	End if
+	
+	if One.Condition == 1 Then //感染状態
+		One.benefit = One.benefit - 4	
+  Elseif One.Condition == 4 Then //死亡状態
+  	One.benefit = One.benefit - 5
+  End if
+}
+
 
 
 
@@ -615,8 +619,8 @@ Function Is_Infection() As Boolean {
   Dim rnd_val As Boolean
 
   is_Infected = false
-  // 10分ごとに判定が入るので、
-  if Rnd() < 0.0005  Then
+  // 10分ごとに判定が入るので、/ 100 くらいで調整する。
+  if Rnd() < Universe.Infection_Rate / 100  Then
   	is_Infected = true
   End If
 	return is_Infected
@@ -627,7 +631,6 @@ Function Is_Infection() As Boolean {
 // 【関数】病院システム
 Sub Set_Hospital(One As Agt) {
 }
-
 #end_rule UNIVERSE.FIELD.WALKER
 
 
@@ -968,7 +971,7 @@ Time_Graph {
 // Control Panel Definition Division
 //-------------------------------------------------------
 Control_Panel {
-    Display_Area = 432, 831, 1248, 100;
+    Display_Area = -53, -109, 1248, 100;
     Display_Type = 0;
     Panel_Item {
         Item_Type = Drop_Down_List;
@@ -1139,8 +1142,8 @@ Others_Data {
     Console_Size_y = 322;
     Componen_Tree_Position_x = 2;
     Componen_Tree_Position_y = 2;
-    Componen_Tree_Size_x = 210;
-    Componen_Tree_Size_y = 831;
+    Componen_Tree_Size_x = 203;
+    Componen_Tree_Size_y = 814;
     Console_Background_Color = 16777215;
     Console_Foreground_Color = 255;
     Console_DisplayLines_Max = 500;
@@ -1174,7 +1177,7 @@ Network_Info {
 // Window Location Definition Division
 //-------------------------------------------------------
 Window_Rectangle {
-    Window_Name = Main_Window, 1882, 26, 1661, 937;
+    Window_Name = Main_Window, -130, -1057, 1438, 947;
     Window_Name = Output_Setting_Window, 605, 293, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
@@ -1206,8 +1209,6 @@ Model_Description {
     Agent Universe.Field.Walker {
         Function Agt_Init {
         }
-        Function add_to_benefit {
-        }
         Function Set_Go_Out_Time_And_Stay {
         }
         Function Set_Go_Out_xy {
@@ -1216,9 +1217,11 @@ Model_Description {
         }
         Function Set_Go_Out_Rate {
         }
-        Function Set_Prisoners_Dilemma_Strategy {
+        Function Set_PD_Strategy {
         }
-        Function Calc_Prisoners_Dilemma_Gain {
+        Function Calc_PD_Gain {
+        }
+        Function add_to_benefit {
         }
         Function Is_Infection {
         }
