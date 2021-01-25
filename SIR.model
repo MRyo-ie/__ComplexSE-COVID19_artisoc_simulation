@@ -70,6 +70,7 @@ Initial_Value {
     UNIVERSE.INFECTION_PERIOD = 1(7);
     UNIVERSE.IMMUNE_PERIOD = 1(500);
     UNIVERSE.SPEED = 1(4.0);
+    UNIVERSE.GO_OUT_PROB = 1(0.2);
 }
 
 
@@ -242,7 +243,7 @@ Agt_Init{
   my.type = Int(Rnd() * 3)
   // エージェントごとの「戦略」を決める。
   // （0. は全体用なので使用不可）1. ランダム、 2. AIIC（常に協力）、 1. AIID（常に非協力） 
-  my.strategy = Int(Rnd() * 3) + 1
+  my.strategy = Int(Rnd() * 4) + 1
 
   // 「出発時間」と「滞在時間」を設定
   Set_Go_Out_Time_And_Stay(my)
@@ -960,9 +961,9 @@ Time_Graph {
     Legend_Pos = Top;
     FastDraw = No;
     Position_x = 1286;
-    Position_y = 441;
+    Position_y = 440;
     Size_x = 490;
-    Size_y = 364;
+    Size_y = 365;
     Map_Cell_Size = -1;
     Axis_Label = "日", "平均利得";
     Draw_By_JFree_Chart = Yes;
@@ -1043,6 +1044,16 @@ Bar_Graph {
         Effective_Fraction_Figures = 0;
         Graph_Element_Color = (0, 153, 153);
     }
+    Output {
+        Graph_Element_Name = "戦略4(手動外出確率)";
+        Line_Color = 0, 255, 0;
+        Line_Width = 10;
+        Marker_Id = 0;
+        Output_Expression = "Universe.Avg_benefit(4)";
+        Expression_Value_Display = Yes;
+        Effective_Fraction_Figures = 0;
+        Graph_Element_Color = (0, 153, 153);
+    }
 }
 
 
@@ -1050,7 +1061,7 @@ Bar_Graph {
 // Control Panel Definition Division
 //-------------------------------------------------------
 Control_Panel {
-    Display_Area = 2066, 588, 1248, 201;
+    Display_Area = 432, 847, 1248, 201;
     Display_Type = 0;
     Panel_Item {
         Item_Type = Drop_Down_List;
@@ -1207,7 +1218,7 @@ Control_Panel {
         Slider_Range_Max = 10;
         Slider_Value_Min = 0.0;
         Slider_Value_Step = 0.1;
-        Slider_Value = "0";
+        Slider_Value = "2";
     }
 }
 
@@ -1272,8 +1283,8 @@ Network_Info {
 // Window Location Definition Division
 //-------------------------------------------------------
 Window_Rectangle {
-    Window_Name = Main_Window, 1740, 37, 1800, 937;
-    Window_Name = Output_Setting_Window, 686, 323, 480, 350;
+    Window_Name = Main_Window, 1746, 38, 1800, 937;
+    Window_Name = Output_Setting_Window, 675, 293, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
 
