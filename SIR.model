@@ -51,8 +51,8 @@ UNIVERSE {
     Dim Speed(0, 0) As Double = (0.0);
     Dim Rate_SIR(0, 0) <1> [10] As Double = (10*0.0);
     Dim AverageRN(0, 0) As Double = (0.0);
-    Dim Sum_benefit(0, 0)[5] As Long = ();
-    Dim Avg_benefit(0, 0)[5] As Double = ();
+    Dim Sum_benefit(0, 0)[5] As Long = (5*0);
+    Dim Avg_benefit(0, 0)[5] As Double = (5*0.0);
 }
 
 
@@ -573,9 +573,13 @@ Sub Decide_Go_Out(One As Agt, Is_Prisoners_Dilemma As Boolean) {
   // 囚人のジレンマ
   if Is_Prisoners_Dilemma Then
 	    if       One.strategy == 1 Then // ランダム
-	      One.go_dest = 1    // go_dest が 1なら、目的地に向かう
+	    		if 0.5 > Rnd() Then
+	      		One.go_dest = 1    // go_dest が 1なら、目的地に向かう
+	      	Else
+	      		One.go_dest = 0
+	      	End if
 	    Elseif One.strategy == 2 Then  // AllC戦略：常に協力（自粛）
-	      One.go_dest = 1    // go_dest が 1なら、目的地に向かう
+	      One.go_dest = 0    // go_dest が 1なら、目的地に向かう
 	    Elseif One.strategy == 3 Then  // AllD戦略：常に非協力（外出）
 	      One.go_dest = 1    // go_dest が 1なら、目的地に向かう
 	    Elseif One.strategy == 4 Then  // その他？：変わった動きをする人
@@ -1247,7 +1251,7 @@ Network_Info {
 // Window Location Definition Division
 //-------------------------------------------------------
 Window_Rectangle {
-    Window_Name = Main_Window, -115, -1057, 1822, 997;
+    Window_Name = Main_Window, 1882, 26, 1661, 937;
     Window_Name = Output_Setting_Window, 686, 323, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
