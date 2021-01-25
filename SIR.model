@@ -53,6 +53,7 @@ UNIVERSE {
     Dim AverageRN(0, 0) As Double = (0.0);
     Dim Sum_benefit(0, 0)[5] As Long = (5*0);
     Dim Avg_benefit(0, 0)[5] As Double = (5*0.0);
+    Dim Go_out_prob(0, 0) As Double = ();
 }
 
 
@@ -583,7 +584,11 @@ Sub Decide_Go_Out(One As Agt, Is_Prisoners_Dilemma As Boolean) {
 	    Elseif One.strategy == 3 Then  // AllD戦略：常に非協力（外出）
 	      One.go_dest = 1    // go_dest が 1なら、目的地に向かう
 	    Elseif One.strategy == 4 Then  // その他？：変わった動きをする人
-	      One.go_dest = 1    // go_dest が 1なら、目的地に向かう
+	    		if Universe.Go_out_prob > Rnd() Then
+	      		One.go_dest = 1    // go_dest が 1なら、目的地に向かう
+	      	Else
+	      		One.go_dest = 1
+	      	End if
 	    End if
 /*   // 通常版（現実世界モデル）
   Else
@@ -1045,7 +1050,7 @@ Bar_Graph {
 // Control Panel Definition Division
 //-------------------------------------------------------
 Control_Panel {
-    Display_Area = 0, 23, 1248, 100;
+    Display_Area = 2066, 588, 1248, 201;
     Display_Type = 0;
     Panel_Item {
         Item_Type = Drop_Down_List;
@@ -1188,6 +1193,22 @@ Control_Panel {
         Slider_Value_Step = 1.0;
         Slider_Value = "3";
     }
+    Panel_Item {
+        Item_Type = Slider;
+        Item_Name = "戦略4(外出確率)";
+        Display_Area = 0, 0, 0, 0;
+        Font_Name = "";
+        Font_Char_Set = 0;
+        Font_Size = 0.0;
+        Font_Style = 0;
+        Font_Color = 0, 0, 0;
+        Font_Background_Color = 0, 0, 0;
+        Var_Name = "Universe.Go_out_prob";
+        Slider_Range_Max = 10;
+        Slider_Value_Min = 0.0;
+        Slider_Value_Step = 0.1;
+        Slider_Value = "0";
+    }
 }
 
 
@@ -1251,7 +1272,7 @@ Network_Info {
 // Window Location Definition Division
 //-------------------------------------------------------
 Window_Rectangle {
-    Window_Name = Main_Window, 1882, 26, 1661, 937;
+    Window_Name = Main_Window, 1740, 37, 1800, 937;
     Window_Name = Output_Setting_Window, 686, 323, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
