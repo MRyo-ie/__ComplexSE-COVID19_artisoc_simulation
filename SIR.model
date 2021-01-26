@@ -12,7 +12,7 @@ Version = 4.2.1;
 // Component Tree
 //-------------------------------------------------------
 UNIVERSE {
-    Space Field(0,0),Square_2D(110, 100, Loop, North, 1, !Map_3D){
+    Space Field(0,0),Square_2D(110, 100, !Loop, North, 1, !Map_3D){
         AgtType Walker(0, 0)[0] {
             Dim ID(0, 0) As Integer = (0);
             Dim X(0, 0) As Double = (0.0);
@@ -51,9 +51,10 @@ UNIVERSE {
     Dim Speed(0, 0) As Double = (0.0);
     Dim Rate_SIR(0, 0) <1> [10] As Double = (10*0.0);
     Dim AverageRN(0, 0) As Double = (0.0);
-    Dim Sum_benefit(0, 0)[5] As Long = (5*0);
     Dim Avg_benefit(0, 0)[5] As Double = (5*0.0);
-    Dim Go_out_prob(0, 0) As Double = ();
+    Dim Sum_benefit(0, 0)[5] As Long = (5*0);
+    Dim Go_out_prob(0, 0) As Double = (0.0);
+    Dim Count_strategy(0, 0)[5] As Double = (5*0.0);
 }
 
 
@@ -66,8 +67,8 @@ Initial_Value {
     UNIVERSE.POP_INOUT = 1(0);
     UNIVERSE.INITIAL_INFECTED = 1(10.0);
     UNIVERSE.INFECTION_RATE = 1(0.03);
-    UNIVERSE.INCUBATION_PERIOD = 1(5);
-    UNIVERSE.INFECTION_PERIOD = 1(7);
+    UNIVERSE.INCUBATION_PERIOD = 1(6);
+    UNIVERSE.INFECTION_PERIOD = 1(12);
     UNIVERSE.IMMUNE_PERIOD = 1(500);
     UNIVERSE.SPEED = 1(4.0);
     UNIVERSE.GO_OUT_PROB = 1(0.2);
@@ -88,7 +89,7 @@ Univ_Init{
 	Universe.Infection_Period = Universe.Infection_Period * 24 * 6
 	Universe.Incubation_Period = Universe.Incubation_Period * 24 * 6
 //	printLn("Universe.Infection_Period : " & Universe.Infection_Period)
-	Universe.Immune_Period = Universe.Incubation_Period * 24 * 6
+	Universe.Immune_Period = Universe.Immune_Period * 24 * 6
 	
 	For i = 0 To Universe.Population - 1
 		One = CreateAgt(Universe.Field.Walker)
@@ -100,7 +101,7 @@ Univ_Init{
 	If Universe.Initial_Infected < 1	Then
 		For Each One in Walkers
 			If Rnd() < Universe.Initial_Infected	Then
-				One.Condition = 1
+				One.Condition = 3
 				One.RN = 0
 			Else
 				One.Condition = 0
@@ -110,7 +111,7 @@ Univ_Init{
 		Counter = 0
 		For Each One in Walkers
 			If Counter < Universe.Initial_Infected	Then
-				One.Condition = 1
+				One.Condition = 3
 				One.RN = 0
 				Counter = Counter+1
 			Else
@@ -191,16 +192,24 @@ Univ_Step_End{
 	//Rate_Sir(2)=免疫保持者（除外者）の比率
 	
 	//<<   総利得   >>//
-	Universe.Sum_benefit(0) = 0
-	For Each One in Walkers	//まず数を数えておく
-		add_sum_benefit(0, One.benefit)
-		add_sum_benefit(One.strategy, One.benefit)
-	Next One
-	//<<   平均利得   >>//
-	// all、 ランダム、 AIIC、AIID、
-	For i = 0 to 4
-		Universe.Avg_benefit(i) = Universe.Sum_benefit(i) / CountAgtset(Walkers)
-	Next i
+//	Universe.Sum_benefit(0) = 0
+	if GetCountStep() Mod 144 == 0 Then
+		For i = 0 to 4
+			Universe.Sum_benefit(i) = 0
+			Universe.Count_strategy(i) = 0
+		Next i
+		For Each One in Walkers	//まず数を数えておく
+			add_sum_benefit(0, One.benefit)
+			add_sum_benefit(One.strategy, One.benefit)
+			Universe.Count_strategy(One.strategy) = Universe.Count_strategy(One.strategy) + 1
+		Next One
+		//<<   平均利得   >>//
+		// all、 ランダム、 AIIC、AIID、
+		Universe.Avg_benefit(0) = Universe.Sum_benefit(0) / CountAgtset(Walkers)
+		For i = 1 to 4
+			Universe.Avg_benefit(i) = Universe.Sum_benefit(i) / Universe.Count_strategy(i) / int(GetCountStep() / 144) 
+		Next i
+	End if
 	
 	//基本再生産数の平均計算
 	Pop = 0
@@ -242,7 +251,7 @@ Agt_Init{
 	// 会社員:0  or  主婦・主夫:1  or  学生:2  をランダムに割り当てる。
   my.type = Int(Rnd() * 3)
   // エージェントごとの「戦略」を決める。
-  // （0. は全体用なので使用不可）1. ランダム、 2. AIIC（常に協力）、 1. AIID（常に非協力） 
+  // （0. は全体用なので使用不可）1. ランダム、 2. AIIC（常に協力）、 3. AIID（常に非協力） 
   my.strategy = Int(Rnd() * 4) + 1
 
   // 「出発時間」と「滞在時間」を設定
@@ -586,7 +595,7 @@ Sub Decide_Go_Out(One As Agt, Is_Prisoners_Dilemma As Boolean) {
 	      One.go_dest = 1    // go_dest が 1なら、目的地に向かう
 	    Elseif One.strategy == 4 Then  // その他？：変わった動きをする人
 	    		if Universe.Go_out_prob > Rnd() Then
-	      		One.go_dest = 1    // go_dest が 1なら、目的地に向かう
+	      		One.go_dest = 0    // go_dest が 1なら、目的地に向かう
 	      	Else
 	      		One.go_dest = 1
 	      	End if
@@ -609,6 +618,9 @@ Sub Decide_Go_Out(One As Agt, Is_Prisoners_Dilemma As Boolean) {
 	    End if
 */
 	End if
+	if One.Condition == 1 or One.Condition == 4 Then
+		One.go_dest = 0
+	End if
 }
 
 
@@ -620,7 +632,7 @@ Sub add_to_benefit(One As Agt) {
 		One.benefit = One.benefit + 1
 	End if
 	
-	if One.Condition == 1 Then //感染状態
+	if One.Condition == 1 or One.Condition == 2 Then //感染状態
 		One.benefit = One.benefit - 4	
   Elseif One.Condition == 4 Then //死亡状態
   	One.benefit = One.benefit - 5
@@ -1058,10 +1070,120 @@ Bar_Graph {
 
 
 //-------------------------------------------------------
+// Pie Graph Output Definition Division
+//-------------------------------------------------------
+Pie_Graph {
+    Font_Name = "Dialog";
+    Font_Char_Set = 81;
+    Font_Size = 12.0;
+    Font_Style = 0;
+    Font_Color = 0, 0, 0;
+    Font_Background_Color = 255, 255, 255;
+    Draw_Timing = Simulation_Step;
+    Draw_Interval = 144;
+    Graph_Name = "戦略別感染率";
+    Title = "";
+    Disable = Yes;
+    Background_Color = 255, 255, 255;
+    Remarks = Yes;
+    Legend_Pos = Top;
+    FastDraw = No;
+    Position_x = 116;
+    Position_y = 493;
+    Size_x = 500;
+    Size_y = 300;
+    Map_Cell_Size = -1;
+    Output_Group_Name = "";
+    Output {
+        Graph_Element_Name = "ランダム";
+        Output_Expression = "Universe.Rate_SIR(1)";
+        Expression_Value_Display = No;
+        Effective_Fraction_Figures = 0;
+        Pie_Color = 255, 0, 0;
+        Graph_Element_Color = (0, 255, 0);
+    }
+}
+
+
+//-------------------------------------------------------
+// Bar Graph Output Definition Division
+//-------------------------------------------------------
+Bar_Graph {
+    Graph_Name = "戦略ごとのエージェント数";
+    Title = "";
+    Disable = No;
+    Background_Color = 255, 255, 255;
+    Remarks = Yes;
+    Legend_Pos = Top;
+    FastDraw = No;
+    Position_x = 180;
+    Position_y = 511;
+    Size_x = 500;
+    Size_y = 300;
+    Map_Cell_Size = -1;
+    Axis_Label = "戦略", "エージェント数";
+    Draw_By_JFree_Chart = Yes;
+    Scale = 0, 0.0, 0, 100.0, 0, 20.0;
+    ScaleAuto = Yes, Yes;
+    Font_Name = "Dialog";
+    Font_Char_Set = 81;
+    Font_Size = 12.0;
+    Font_Style = 0;
+    Font_Color = 0, 0, 0;
+    Font_Background_Color = 255, 255, 255;
+    Draw_Timing = Simulation_Step;
+    Draw_Interval = 1;
+    Piled_Bar_Graph = No;
+    Bar_Direction = 2;
+    Output_Group_Name = "";
+    Output {
+        Graph_Element_Name = "ランダム";
+        Line_Color = 0, 0, 255;
+        Line_Width = 10;
+        Marker_Id = 0;
+        Output_Expression = "Universe.Count_strategy(1)";
+        Expression_Value_Display = No;
+        Effective_Fraction_Figures = 0;
+        Graph_Element_Color = (204, 0, 0);
+    }
+    Output {
+        Graph_Element_Name = "AⅡC";
+        Line_Color = 0, 255, 0;
+        Line_Width = 10;
+        Marker_Id = 0;
+        Output_Expression = "Universe.Count_strategy(2)";
+        Expression_Value_Display = No;
+        Effective_Fraction_Figures = 0;
+        Graph_Element_Color = (153, 0, 0);
+    }
+    Output {
+        Graph_Element_Name = "AⅡD";
+        Line_Color = 255, 0, 255;
+        Line_Width = 10;
+        Marker_Id = 0;
+        Output_Expression = "Universe.Count_strategy(2)";
+        Expression_Value_Display = No;
+        Effective_Fraction_Figures = 0;
+        Graph_Element_Color = (204, 0, 0);
+    }
+    Output {
+        Graph_Element_Name = "戦略4";
+        Line_Color = 0, 255, 255;
+        Line_Width = 10;
+        Marker_Id = 0;
+        Output_Expression = "Universe.Count_strategy(3)";
+        Expression_Value_Display = No;
+        Effective_Fraction_Figures = 0;
+        Graph_Element_Color = (204, 0, 0);
+    }
+}
+
+
+//-------------------------------------------------------
 // Control Panel Definition Division
 //-------------------------------------------------------
 Control_Panel {
-    Display_Area = 432, 847, 1248, 201;
+    Display_Area = 289, 819, 1391, 204;
     Display_Type = 0;
     Panel_Item {
         Item_Type = Drop_Down_List;
@@ -1170,23 +1292,7 @@ Control_Panel {
         Slider_Range_Max = 9;
         Slider_Value_Min = 5.0;
         Slider_Value_Step = 1.0;
-        Slider_Value = "2";
-    }
-    Panel_Item {
-        Item_Type = Slider;
-        Item_Name = "平均免疫期間";
-        Display_Area = 0, 0, 0, 0;
-        Font_Name = "";
-        Font_Char_Set = 0;
-        Font_Size = 0.0;
-        Font_Style = 0;
-        Font_Color = 0, 0, 0;
-        Font_Background_Color = 0, 0, 0;
-        Var_Name = "Universe.Immune_Period";
-        Slider_Range_Max = 499;
-        Slider_Value_Min = 1.0;
-        Slider_Value_Step = 1.0;
-        Slider_Value = "499";
+        Slider_Value = "7";
     }
     Panel_Item {
         Item_Type = Slider;
@@ -1202,7 +1308,7 @@ Control_Panel {
         Slider_Range_Max = 5;
         Slider_Value_Min = 2.0;
         Slider_Value_Step = 1.0;
-        Slider_Value = "3";
+        Slider_Value = "4";
     }
     Panel_Item {
         Item_Type = Slider;
@@ -1245,7 +1351,7 @@ Others_Data {
     Console_Position_x = 190;
     Console_Position_y = 485;
     Console_Size_x = 497;
-    Console_Size_y = 322;
+    Console_Size_y = 321;
     Componen_Tree_Position_x = 2;
     Componen_Tree_Position_y = 2;
     Componen_Tree_Size_x = 176;
@@ -1283,8 +1389,8 @@ Network_Info {
 // Window Location Definition Division
 //-------------------------------------------------------
 Window_Rectangle {
-    Window_Name = Main_Window, 1746, 38, 1800, 937;
-    Window_Name = Output_Setting_Window, 675, 293, 480, 350;
+    Window_Name = Main_Window, 2126, 107, 1431, 935;
+    Window_Name = Output_Setting_Window, 669, 276, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
 
