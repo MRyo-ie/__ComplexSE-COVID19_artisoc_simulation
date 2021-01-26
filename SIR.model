@@ -55,6 +55,7 @@ UNIVERSE {
     Dim Sum_benefit(0, 0)[5] As Long = (5*0);
     Dim Go_out_prob(0, 0) As Double = (0.0);
     Dim Count_strategy(0, 0)[5] As Double = (5*0.0);
+    Dim isolation_period(0, 0) As Integer = ();
 }
 
 
@@ -72,6 +73,7 @@ Initial_Value {
     UNIVERSE.IMMUNE_PERIOD = 1(500);
     UNIVERSE.SPEED = 1(4.0);
     UNIVERSE.GO_OUT_PROB = 1(0.2);
+    UNIVERSE.ISOLATION_PERIOD = 1(0);
 }
 
 
@@ -90,6 +92,7 @@ Univ_Init{
 	Universe.Incubation_Period = Universe.Incubation_Period * 24 * 6
 //	printLn("Universe.Infection_Period : " & Universe.Infection_Period)
 	Universe.Immune_Period = Universe.Immune_Period * 24 * 6
+	Universe.isolation_period = Universe.isolation_period * 24 * 6
 	
 	For i = 0 To Universe.Population - 1
 		One = CreateAgt(Universe.Field.Walker)
@@ -251,7 +254,7 @@ Agt_Init{
 	// 会社員:0  or  主婦・主夫:1  or  学生:2  をランダムに割り当てる。
   my.type = Int(Rnd() * 3)
   // エージェントごとの「戦略」を決める。
-  // （0. は全体用なので使用不可）1. ランダム、 2. AIIC（常に協力）、 3. AIID（常に非協力） 
+  // （0. は全体用なので使用不可）1. ランダム、 2. AIIC（常に協力）、 3. AIID（常に非協力）、 4. 固定外出確率（手動で指定） 
   my.strategy = Int(Rnd() * 4) + 1
 
   // 「出発時間」と「滞在時間」を設定
@@ -340,34 +343,35 @@ Agt_Step{
 	Dim OptionCandidate As Integer
 	Dim distance As Double
 
-	if My.Condition <> 4 Then
-	  // 家と目的地の座標を保存する (最初だけ起動)
-	  if my.set_home == 0 Then
-	    	// 「自宅の座標」を設定
-	    	do while my.X > 100 
-	    		my.X = Int(Rnd()*100)
-    		Loop
-		  my.home_x = my.X
-		  my.home_y = my.Y
-	  	Set_Go_Out_xy(my)
-	    my.set_home = 1
-	  End if
-	
-	  // 外出確率を計算する（外出する場合は、my.go_dest = 1 にする）
-    if GetCountStep() Mod 144 == 1 Then
-	  	Decide_Go_Out(my, True)
-    End if
-	  
-		// 会社に留まる時間をカウント
-	  if my.is_stay == 1 and my.go_home == 0 Then
-	  	my.stay_count = my.stay_count + 1
-	  End if
 
-		//	一日の終わりに報酬を追加する
-		if GetCountStep() Mod 144 == 0 Then
-	  	add_to_benefit(my)
-		End if
-	
+  // 家と目的地の座標を保存する (最初だけ起動)
+  if my.set_home == 0 Then
+    	// 「自宅の座標」を設定
+    	do while my.X > 100 
+    		my.X = Int(Rnd()*100)
+  		Loop
+	  my.home_x = my.X
+	  my.home_y = my.Y
+  	Set_Go_Out_xy(my)
+    my.set_home = 1
+  End if
+
+  // 外出確率を計算する（外出する場合は、my.go_dest = 1 にする）
+  if GetCountStep() Mod 144 == 1 Then
+  	Decide_Go_Out(my, True)
+  End if
+  
+	// 会社に留まる時間をカウント
+  if my.is_stay == 1 and my.go_home == 0 Then
+  	my.stay_count = my.stay_count + 1
+  End if
+
+	//	一日の終わりに報酬を追加する
+	if GetCountStep() Mod 144 == 0 Then
+  	add_to_benefit(my)
+	End if
+
+	if My.Condition <> 4 Then   // D：死亡者は、以降の処理を行わない。
 	  // 指定したstepで移動するフラグをたてる
 	  if GetCountStep() Mod 144 == my.time_go_office and my.go_dest == 1 Then
 	  	my.go_home = 0
@@ -398,7 +402,7 @@ Agt_Step{
 		//Condition_Adjustment
 	  MakeAllAgtsetAroundOwn(Neighbors, 0.02, False)
 	  If Universe.Scenario == "SIR"    Then
-	    If     My.Condition == 0  Then  //健康なとき
+/*	    If     My.Condition == 0  Then  //健康なとき
 	
 			Elseif	My.Condition == 1	Then	//感染性をもったとき
 				My.Counter = My.Counter+1	//感染期間を数える
@@ -482,7 +486,7 @@ Agt_Step{
 						My.Condition = 2
 						My.Counter = 0
 				End if
-			End if
+			End if    */
 		Elseif	Universe.Scenario == "SEIR_02"		Then
 			If 		My.Condition == 0	Then	//健康なとき
 	
@@ -501,7 +505,7 @@ Agt_Step{
 						End if
 					End if
 				Next One
-				If	1/Universe.Infection_Period > Rnd()	 and Universe.Infection_Period < My.Counter Then	//回復する
+				If	1/Universe.Infection_Period > Rnd()	 Then	//回復する
 						My.Condition = 2
 						if  0.01 > Rnd() Then  // and 入院していない
 						    // or  入院している  and  0.01  > Rnd()  Then
@@ -510,7 +514,7 @@ Agt_Step{
 							my.Y = Int(my.Y /2)
 //							printLn("[Info] dead.")
 						End If
-						My.Counter = 0
+						//My.Counter = 0
 				End if
 			Elseif	My.Condition == 3	Then	//潜伏感染者のとき（感染性のある感染者）
 				My.Counter = My.Counter+1	//感染期間を数える
@@ -523,15 +527,16 @@ Agt_Step{
 				Next One
 				If	1/Universe.Incubation_Period > Rnd()	Then	//発症する
 						My.Condition = 1
-						My.Counter = 0
+						// My.Counter = 0
 				End if
-				/*If	1/Universe.Infection_Period > Rnd()	Then	//回復する
+				If	1/Universe.Infection_Period > Rnd()	Then	//回復する
 						My.Condition = 2
 						My.Counter = 0
 				End if
-				*/
+			Elseif	My.Condition == 2	Then
+				My.Counter = My.Counter+1	//感染期間を数える
 			End if	
-		Elseif	Universe.Scenario == "SIRS"		Then
+/*		Elseif	Universe.Scenario == "SIRS"		Then
 			If 		My.Condition == 0	Then	//健康なとき
 	
 			Elseif	My.Condition == 1	Then	//感染性をもったとき
@@ -554,8 +559,8 @@ Agt_Step{
 						My.Condition = 0
 						My.Counter = 0
 				End if
-			End if
-		End if
+			End if   */
+		End if 
 	  
 		//Color_Adjustment
 		If 		My.Condition == 0	Then	// S:健常者（感受性者）
@@ -596,9 +601,9 @@ Sub Decide_Go_Out(One As Agt, Is_Prisoners_Dilemma As Boolean) {
 	      One.go_dest = 1    // go_dest が 1なら、目的地に向かう
 	    Elseif One.strategy == 4 Then  // その他？：変わった動きをする人
 	    		if Universe.Go_out_prob > Rnd() Then
-	      		One.go_dest = 1    // go_dest が 1なら、目的地に向かう
+	      		One.go_dest = 0    // go_dest が 1なら、目的地に向かう
 	      	Else
-	      		One.go_dest = 0
+	      		One.go_dest = 1
 	      	End if
 	    End if
 /*   // 通常版（現実世界モデル）
@@ -619,8 +624,13 @@ Sub Decide_Go_Out(One As Agt, Is_Prisoners_Dilemma As Boolean) {
 	    End if
 */
 	End if
-	if One.Condition == 1 or One.Condition == 4 Then
+	if One.Condition == 1 or One.Condition == 4 Then //感染者と死亡者は動けない。
 		One.go_dest = 0
+	End if
+	if One.Condition == 2 Then //免疫獲得者は一定期間以上休み続ける。
+		if One.Counter < Universe.isolation_period  Then
+			One.go_dest = 0
+		End if
 	End if
 }
 
@@ -635,8 +645,10 @@ Sub add_to_benefit(One As Agt) {
 	
 	if One.Condition == 1 or One.Condition == 3 Then //感染状態
 		One.benefit = One.benefit - 4	
-  Elseif One.Condition == 4 Then //死亡状態
-  	One.benefit = One.benefit - 5
+  Elseif One.Condition == 4 Then // D:死亡状態
+//  	printLn("[Info] strategy : " & One.strategy  & " is Dead.")
+//  	printLn("          benefit : "  & One.benefit & " → -10")
+  	One.benefit = -10
   End if
 }
 
@@ -933,8 +945,8 @@ Time_Graph {
     FastDraw = No;
     Position_x = 1287;
     Position_y = -1;
-    Size_x = 487;
-    Size_y = 445;
+    Size_x = 490;
+    Size_y = 231;
     Map_Cell_Size = -1;
     Axis_Label = "日", "総利得";
     Draw_By_JFree_Chart = Yes;
@@ -974,9 +986,9 @@ Time_Graph {
     Legend_Pos = Top;
     FastDraw = No;
     Position_x = 1286;
-    Position_y = 440;
-    Size_x = 490;
-    Size_y = 365;
+    Position_y = 231;
+    Size_x = 493;
+    Size_y = 213;
     Map_Cell_Size = -1;
     Axis_Label = "日", "平均利得";
     Draw_By_JFree_Chart = Yes;
@@ -1000,7 +1012,7 @@ Time_Graph {
 // Bar Graph Output Definition Division
 //-------------------------------------------------------
 Bar_Graph {
-    Graph_Name = "平均利得（総利得／（人・step））";
+    Graph_Name = "平均利得（総利得／人）";
     Title = "平均利得（戦略ごとの比較）";
     Disable = No;
     Background_Color = 255, 255, 255;
@@ -1117,10 +1129,10 @@ Bar_Graph {
     Remarks = Yes;
     Legend_Pos = Top;
     FastDraw = No;
-    Position_x = 185;
-    Position_y = 492;
-    Size_x = 500;
-    Size_y = 300;
+    Position_x = 1285;
+    Position_y = 443;
+    Size_x = 493;
+    Size_y = 361;
     Map_Cell_Size = -1;
     Axis_Label = "戦略", "エージェント数";
     Draw_By_JFree_Chart = Yes;
@@ -1184,7 +1196,7 @@ Bar_Graph {
 // Control Panel Definition Division
 //-------------------------------------------------------
 Control_Panel {
-    Display_Area = 182, 838, 1391, 204;
+    Display_Area = 432, 669, 1248, 160;
     Display_Type = 0;
     Panel_Item {
         Item_Type = Drop_Down_List;
@@ -1327,6 +1339,22 @@ Control_Panel {
         Slider_Value_Step = 0.1;
         Slider_Value = "2";
     }
+    Panel_Item {
+        Item_Type = Slider;
+        Item_Name = "感染後の拘束期間";
+        Display_Area = 0, 0, 0, 0;
+        Font_Name = "";
+        Font_Char_Set = 0;
+        Font_Size = 0.0;
+        Font_Style = 0;
+        Font_Color = 0, 0, 0;
+        Font_Background_Color = 0, 0, 0;
+        Var_Name = "Universe.isolation_period";
+        Slider_Range_Max = 21;
+        Slider_Value_Min = 0.0;
+        Slider_Value_Step = 1.0;
+        Slider_Value = "0";
+    }
 }
 
 
@@ -1349,14 +1377,14 @@ Others_Data {
     Debug_Position_y = 75;
     Debug_Size_x = 400;
     Debug_Size_y = 200;
-    Console_Position_x = 190;
+    Console_Position_x = 188;
     Console_Position_y = 485;
-    Console_Size_x = 497;
+    Console_Size_x = 499;
     Console_Size_y = 321;
     Componen_Tree_Position_x = 2;
     Componen_Tree_Position_y = 2;
-    Componen_Tree_Size_x = 176;
-    Componen_Tree_Size_y = 851;
+    Componen_Tree_Size_x = 184;
+    Componen_Tree_Size_y = 805;
     Console_Background_Color = 16777215;
     Console_Foreground_Color = 255;
     Console_DisplayLines_Max = 500;
@@ -1390,7 +1418,7 @@ Network_Info {
 // Window Location Definition Division
 //-------------------------------------------------------
 Window_Rectangle {
-    Window_Name = Main_Window, 77, 62, 1431, 935;
+    Window_Name = Main_Window, 1701, 100, 1765, 935;
     Window_Name = Output_Setting_Window, 669, 276, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
