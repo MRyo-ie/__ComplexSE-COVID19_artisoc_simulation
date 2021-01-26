@@ -501,7 +501,7 @@ Agt_Step{
 						End if
 					End if
 				Next One
-				If	1/Universe.Infection_Period > Rnd()	 Then	//回復する
+				If	1/Universe.Infection_Period > Rnd()	 and Universe.Infection_Period < My.Counter Then	//回復する
 						My.Condition = 2
 						if  0.01 > Rnd() Then  // and 入院していない
 						    // or  入院している  and  0.01  > Rnd()  Then
@@ -525,10 +525,11 @@ Agt_Step{
 						My.Condition = 1
 						My.Counter = 0
 				End if
-				If	1/Universe.Infection_Period > Rnd()	Then	//回復する
+				/*If	1/Universe.Infection_Period > Rnd()	Then	//回復する
 						My.Condition = 2
 						My.Counter = 0
 				End if
+				*/
 			End if	
 		Elseif	Universe.Scenario == "SIRS"		Then
 			If 		My.Condition == 0	Then	//健康なとき
@@ -595,9 +596,9 @@ Sub Decide_Go_Out(One As Agt, Is_Prisoners_Dilemma As Boolean) {
 	      One.go_dest = 1    // go_dest が 1なら、目的地に向かう
 	    Elseif One.strategy == 4 Then  // その他？：変わった動きをする人
 	    		if Universe.Go_out_prob > Rnd() Then
-	      		One.go_dest = 0    // go_dest が 1なら、目的地に向かう
+	      		One.go_dest = 1    // go_dest が 1なら、目的地に向かう
 	      	Else
-	      		One.go_dest = 1
+	      		One.go_dest = 0
 	      	End if
 	    End if
 /*   // 通常版（現実世界モデル）
@@ -632,7 +633,7 @@ Sub add_to_benefit(One As Agt) {
 		One.benefit = One.benefit + 1
 	End if
 	
-	if One.Condition == 1 or One.Condition == 2 Then //感染状態
+	if One.Condition == 1 or One.Condition == 3 Then //感染状態
 		One.benefit = One.benefit - 4	
   Elseif One.Condition == 4 Then //死亡状態
   	One.benefit = One.benefit - 5
@@ -1116,8 +1117,8 @@ Bar_Graph {
     Remarks = Yes;
     Legend_Pos = Top;
     FastDraw = No;
-    Position_x = 180;
-    Position_y = 511;
+    Position_x = 185;
+    Position_y = 492;
     Size_x = 500;
     Size_y = 300;
     Map_Cell_Size = -1;
@@ -1183,7 +1184,7 @@ Bar_Graph {
 // Control Panel Definition Division
 //-------------------------------------------------------
 Control_Panel {
-    Display_Area = 289, 819, 1391, 204;
+    Display_Area = 182, 838, 1391, 204;
     Display_Type = 0;
     Panel_Item {
         Item_Type = Drop_Down_List;
@@ -1389,7 +1390,7 @@ Network_Info {
 // Window Location Definition Division
 //-------------------------------------------------------
 Window_Rectangle {
-    Window_Name = Main_Window, 2126, 107, 1431, 935;
+    Window_Name = Main_Window, 77, 62, 1431, 935;
     Window_Name = Output_Setting_Window, 669, 276, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
