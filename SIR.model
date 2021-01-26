@@ -53,7 +53,7 @@ UNIVERSE {
     Dim AverageRN(0, 0) As Double = (0.0);
     Dim Sum_benefit(0, 0)[5] As Long = (5*0);
     Dim Avg_benefit(0, 0)[5] As Double = (5*0.0);
-    Dim Go_out_prob(0, 0) As Double = ();
+    Dim Go_out_prob(0, 0) As Double = (0.0);
 }
 
 
@@ -331,7 +331,6 @@ Agt_Step{
 	Dim OptionCandidate As Integer
 	Dim distance As Double
 
-	if My.Condition <> 4 Then
 	  // 家と目的地の座標を保存する (最初だけ起動)
 	  if my.set_home == 0 Then
 	    	// 「自宅の座標」を設定
@@ -355,10 +354,11 @@ Agt_Step{
 	  End if
 
 		//	一日の終わりに報酬を追加する
-		if GetCountStep() Mod 144 == 0 Then
+		if GetCountStep() Mod 144 == 140 Then
 	  	add_to_benefit(my)
 		End if
 	
+	if My.Condition <> 4 Then
 	  // 指定したstepで移動するフラグをたてる
 	  if GetCountStep() Mod 144 == my.time_go_office and my.go_dest == 1 Then
 	  	my.go_home = 0
@@ -389,6 +389,7 @@ Agt_Step{
 		//Condition_Adjustment
 	  MakeAllAgtsetAroundOwn(Neighbors, 0.02, False)
 	  If Universe.Scenario == "SIR"    Then
+	  /*
 	    If     My.Condition == 0  Then  //健康なとき
 	
 			Elseif	My.Condition == 1	Then	//感染性をもったとき
@@ -474,6 +475,7 @@ Agt_Step{
 						My.Counter = 0
 				End if
 			End if
+			*/
 		Elseif	Universe.Scenario == "SEIR_02"		Then
 			If 		My.Condition == 0	Then	//健康なとき
 	
@@ -499,7 +501,7 @@ Agt_Step{
 							My.Condition = 4
 							my.X = 105
 							my.Y = Int(my.Y /2)
-//							printLn("[Info] dead.")
+//							printLn("[Info] dead.  Condition : " & My.Condition)
 						End If
 						My.Counter = 0
 				End if
@@ -521,7 +523,7 @@ Agt_Step{
 						My.Counter = 0
 				End if
 			End if	
-		Elseif	Universe.Scenario == "SIRS"		Then
+/*		Elseif	Universe.Scenario == "SIRS"		Then
 			If 		My.Condition == 0	Then	//健康なとき
 	
 			Elseif	My.Condition == 1	Then	//感染性をもったとき
@@ -544,7 +546,7 @@ Agt_Step{
 						My.Condition = 0
 						My.Counter = 0
 				End if
-			End if
+			End if*/
 		End if
 	  
 		//Color_Adjustment
@@ -617,13 +619,15 @@ Sub add_to_benefit(One As Agt) {
 	if One.go_dest == 1 Then
 		One.benefit = One.benefit + 3
 	Else
-		One.benefit = One.benefit + 1
+		One.benefit = One.benefit + 2
 	End if
 	
-	if One.Condition == 1 Then //感染状態
-		One.benefit = One.benefit - 4	
-  Elseif One.Condition == 4 Then //死亡状態
-  	One.benefit = One.benefit - 5
+	if One.Condition == 1 Then // I:感染状態
+		One.benefit = One.benefit - 5
+  Elseif One.Condition == 4 Then // D:死亡状態
+  	printLn("[Info] strategy : " & One.strategy  & " is Dead.")
+  	printLn("          benefit : "  & One.benefit & " → -20")
+  	One.benefit = -10
   End if
 }
 
@@ -987,7 +991,7 @@ Time_Graph {
 // Bar Graph Output Definition Division
 //-------------------------------------------------------
 Bar_Graph {
-    Graph_Name = "平均利得（総利得／（人・step））";
+    Graph_Name = "平均利得（総利得／人）";
     Title = "平均利得（戦略ごとの比較）";
     Disable = No;
     Background_Color = 255, 255, 255;
@@ -1061,7 +1065,7 @@ Bar_Graph {
 // Control Panel Definition Division
 //-------------------------------------------------------
 Control_Panel {
-    Display_Area = 432, 847, 1248, 201;
+    Display_Area = 0, 23, 1430, 100;
     Display_Type = 0;
     Panel_Item {
         Item_Type = Drop_Down_List;
@@ -1248,8 +1252,8 @@ Others_Data {
     Console_Size_y = 322;
     Componen_Tree_Position_x = 2;
     Componen_Tree_Position_y = 2;
-    Componen_Tree_Size_x = 176;
-    Componen_Tree_Size_y = 851;
+    Componen_Tree_Size_x = 187;
+    Componen_Tree_Size_y = 796;
     Console_Background_Color = 16777215;
     Console_Foreground_Color = 255;
     Console_DisplayLines_Max = 500;
@@ -1283,8 +1287,8 @@ Network_Info {
 // Window Location Definition Division
 //-------------------------------------------------------
 Window_Rectangle {
-    Window_Name = Main_Window, 1746, 38, 1800, 937;
-    Window_Name = Output_Setting_Window, 675, 293, 480, 350;
+    Window_Name = Main_Window, -116, -1057, 1845, 894;
+    Window_Name = Output_Setting_Window, 697, 272, 480, 350;
     Window_Name = Artisoc_Help_Window, 10, 10, 400, 300;
 }
 
